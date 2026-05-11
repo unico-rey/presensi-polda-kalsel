@@ -21,6 +21,9 @@ if errorlevel 1 goto DB_ERROR
 python migrate_db.py
 if errorlevel 1 goto MIGRATE_ERROR
 
+python seed_master.py
+if errorlevel 1 goto SEED_ERROR
+
 :: 4. Open Browser
 echo [3/4] Opening browser...
 start http://127.0.0.1:8000/absensi/
@@ -43,6 +46,11 @@ exit /b 1
 
 :MIGRATE_ERROR
 echo [ERROR] Database migration failed.
+pause
+exit /b 1
+
+:SEED_ERROR
+echo [ERROR] Seeding master data failed.
 pause
 exit /b 1
 

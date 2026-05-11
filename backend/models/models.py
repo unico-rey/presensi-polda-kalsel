@@ -32,6 +32,8 @@ class Absensi(Base):
     keterangan = Column(Text, nullable=True)
     foto = Column(Text(length=4294967295), nullable=True) # Base64 image data
     tanda_tangan = Column(Text(length=4294967295), nullable=True) # Base64 signature data
+    foto_pulang = Column(Text(length=4294967295), nullable=True) # Base64 foto saat pulang
+    tanda_tangan_pulang = Column(Text(length=4294967295), nullable=True) # Base64 TTD saat pulang
     latitude = Column(String(50), nullable=True)
     longitude = Column(String(50), nullable=True)
 

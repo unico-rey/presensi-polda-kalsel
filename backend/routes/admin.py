@@ -43,21 +43,43 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     
     # recent 10 absensi
     recent = db.query(Absensi, Anggota.nama).join(Anggota, Absensi.id_anggota == Anggota.id_anggota)\
-        .order_by(desc(Absensi.tanggal)).limit(10).all()
+        .order_by(desc(func.coalesce(Absensi.waktu_pulang, Absensi.waktu_masuk))).limit(10).all()
         
-    recent_absensi = []
+    events = []
     for a, name in recent:
-        recent_absensi.append({
-            "waktu": a.waktu_masuk.strftime("%H:%M:%S") if a.waktu_masuk else "00:00",
-            "tanggal": a.tanggal.strftime("%d-%m-%Y"),
-            "foto": a.foto,
-            "tanda_tangan": a.tanda_tangan,
-            "latitude": a.latitude,
-            "longitude": a.longitude,
-            "nama": name,
-            "id_anggota": a.id_anggota,
-            "status": a.status
-        })
+        if a.waktu_masuk:
+            events.append({
+                "tipe": "masuk",
+                "waktu": a.waktu_masuk,
+                "waktu_str": a.waktu_masuk.strftime("%H:%M:%S"),
+                "tanggal": a.tanggal.strftime("%d-%m-%Y"),
+                "foto": a.foto,
+                "tanda_tangan": a.tanda_tangan,
+                "latitude": a.latitude,
+                "longitude": a.longitude,
+                "nama": name,
+                "id_anggota": a.id_anggota,
+                "status": a.status,
+                "keterangan": a.keterangan
+            })
+        if a.waktu_pulang:
+            events.append({
+                "tipe": "pulang",
+                "waktu": a.waktu_pulang,
+                "waktu_str": a.waktu_pulang.strftime("%H:%M:%S"),
+                "tanggal": a.tanggal.strftime("%d-%m-%Y"),
+                "foto": a.foto_pulang,
+                "tanda_tangan": a.tanda_tangan_pulang,
+                "latitude": a.latitude,
+                "longitude": a.longitude,
+                "nama": name,
+                "id_anggota": a.id_anggota,
+                "status": "Pulang",
+                "keterangan": a.keterangan
+            })
+    
+    events.sort(key=lambda x: x["waktu"], reverse=True)
+    recent_absensi = events[:10]
         
     # recap efficiency dynamically based on current month's workdays up to today
     import calendar
@@ -504,9 +526,9 @@ def admin_absensi_list(request: Request, start_date: str = None, end_date: str =
         q = q.filter(func.month(Absensi.tanggal) == m, func.year(Absensi.tanggal) == y)
     
     if order == "asc":
-        q = q.order_by(asc(Absensi.tanggal))
+        q = q.order_by(asc(func.coalesce(Absensi.waktu_pulang, Absensi.waktu_masuk)))
     else:
-        q = q.order_by(desc(Absensi.tanggal))
+        q = q.order_by(desc(func.coalesce(Absensi.waktu_pulang, Absensi.waktu_masuk)))
     
     # Pagination
     per_page = 20
@@ -516,11 +538,48 @@ def admin_absensi_list(request: Request, start_date: str = None, end_date: str =
     offset = (page - 1) * per_page
     absensi_results = q.offset(offset).limit(per_page).all()
     
+    events = []
+    for a, name, rank, no_wa in absensi_results:
+        if a.waktu_masuk:
+            events.append({
+                "tipe": "masuk",
+                "waktu": a.waktu_masuk,
+                "waktu_str": a.waktu_masuk.strftime("%H:%M:%S"),
+                "tanggal": a.tanggal.strftime("%d-%m-%Y"),
+                "nama": name,
+                "rank": rank,
+                "no_wa": no_wa,
+                "foto": a.foto,
+                "tanda_tangan": a.tanda_tangan,
+                "latitude": a.latitude,
+                "longitude": a.longitude,
+                "status": a.status,
+                "keterangan": a.keterangan
+            })
+        if a.waktu_pulang:
+            events.append({
+                "tipe": "pulang",
+                "waktu": a.waktu_pulang,
+                "waktu_str": a.waktu_pulang.strftime("%H:%M:%S"),
+                "tanggal": a.tanggal.strftime("%d-%m-%Y"),
+                "nama": name,
+                "rank": rank,
+                "no_wa": no_wa,
+                "foto": a.foto_pulang,
+                "tanda_tangan": a.tanda_tangan_pulang,
+                "latitude": a.latitude,
+                "longitude": a.longitude,
+                "status": "Pulang",
+                "keterangan": a.keterangan
+            })
+            
+    events.sort(key=lambda x: x["waktu"], reverse=(order == "desc"))
+    
     filters = {"start_date": start_date, "end_date": end_date, "month": month, "search": search, "order": order}
     return templates.TemplateResponse("admin_absensi_list.html", {
         "request": request,
         "admin": admin,
-        "absensi": absensi_results,
+        "absensi": events,
         "filters": filters,
         "page": page,
         "total_pages": total_pages,

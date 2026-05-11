@@ -76,6 +76,8 @@ async def absensi_submit(request: Request, db: Session = Depends(get_db)):
         if not rekam:
             return RedirectResponse("/absensi/?error=belum_absen_masuk", status_code=302)
         rekam.waktu_pulang = now
+        rekam.foto_pulang = foto
+        rekam.tanda_tangan_pulang = tanda_tangan
         if tipe_absen == "pulang_siang":
              rekam.keterangan = "Pulang Siang"
         db.commit()
@@ -148,16 +150,21 @@ async def absensi_submit(request: Request, db: Session = Depends(get_db)):
             pass  # Jangan gagalkan absensi jika push notification error
         # --------------------------------------------------
         
+    if tipe_absen in ["pulang", "pulang_siang"]:
+        return RedirectResponse(f"/absensi/detail/{record_id}?tipe=pulang", status_code=302)
     return RedirectResponse(f"/absensi/detail/{record_id}", status_code=302)
 
 @router.get("/detail/{absensi_id}", response_class=HTMLResponse)
-def absensi_detail_view(absensi_id: int, request: Request, db: Session = Depends(get_db)):
+def absensi_detail_view(absensi_id: int, request: Request, tipe: str = None, db: Session = Depends(get_db)):
     ag = db.query(Absensi).filter(Absensi.id == absensi_id).first()
     if not ag:
         raise HTTPException(status_code=404, detail="Data presensi tidak ditemukan")
         
-    # Lazy load or join anggota logic is easy if relationship is set, otherwise manual query:
     anggota_data = db.query(Anggota).filter(Anggota.id_anggota == ag.id_anggota).first()
-    ag.anggota = anggota_data # attach for template usage
+    ag.anggota = anggota_data
     
-    return templates.TemplateResponse("absensi_detail.html", {"request": request, "absensi": ag})
+    return templates.TemplateResponse("absensi_detail.html", {
+        "request": request, 
+        "absensi": ag,
+        "tipe": tipe or "masuk"
+    })

@@ -61,39 +61,38 @@
                 <table class="w-full text-left border-collapse">
                     <thead class="bg-gray-900/90 text-gray-500 text-[9px] uppercase font-black tracking-widest">
                         <tr class="border-b border-gray-800">
-                            <th class="px-6 py-5 border-r border-gray-800/50">Tanggal</th>
-                            <th class="px-6 py-5 border-r border-gray-800/50">Nama</th>
-                            <th class="px-6 py-5 border-r border-gray-800/50">Masuk</th>
-                            <th class="px-6 py-5 border-r border-gray-800/50">Pulang</th>
-                            <th class="px-6 py-5 border-r border-gray-800/50 text-center no-print">Foto</th>
-                            <th class="px-6 py-5 border-r border-gray-800/50 text-center no-print">Tanda Tangan</th>
-                            <th class="px-6 py-5 border-r border-gray-800/50">Lokasi</th>
-                            <th class="px-6 py-5 text-center">Status</th>
+                            <th class="px-4 py-4 border-r border-gray-800/50">Tanggal</th>
+                            <th class="px-4 py-4 border-r border-gray-800/50">Nama</th>
+                            <th class="px-4 py-4 border-r border-gray-800/50 text-center">Waktu</th>
+                            <th class="px-4 py-4 border-r border-gray-800/50 text-center no-print">Foto</th>
+                            <th class="px-4 py-4 border-r border-gray-800/50 text-center no-print">Tanda Tangan</th>
+                            <th class="px-4 py-4 border-r border-gray-800/50 text-center">Lokasi</th>
+                            <th class="px-4 py-4 text-center">Status</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-800 text-[11px]">
-                        {% for a, name, rank, no_wa in absensi %}
-                        <tr class="hover:bg-cyan-500/[0.03] transition-colors border-b border-gray-800/50">
-                            <td class="px-6 py-4 border-r border-gray-800/50 whitespace-nowrap">
-                                <span class="text-white font-mono font-bold text-[10px]">{{ a.tanggal.strftime('%d-%m-%Y') }}</span>
+                        {% for ev in absensi %}
+                        <!-- DATA EVENT -->
+                        <tr class="hover:bg-cyan-500/[0.03] transition-colors border-b border-gray-800/50 {% if ev.tipe == 'pulang' %}bg-yellow-900/10 hover:bg-yellow-500/[0.05]{% endif %}">
+                            <td class="px-4 py-3 border-r border-gray-800/50 whitespace-nowrap">
+                                <span class="text-white font-mono font-bold text-[10px]">
+                                    {{ ev.tanggal }}
+                                </span>
                             </td>
-                            <td class="px-6 py-4 border-r border-gray-800/50">
-                                <span class="text-white font-bold uppercase">{{ name }}</span>
-                                <br><span class="text-cyan-500 font-black text-[9px] uppercase tracking-tighter">{{ rank or '-' }}</span>
-                                <br><span class="text-gray-500 font-mono text-[9px]">{{ no_wa or 'Tanpa WA' }}</span>
+                            <td class="px-4 py-3 border-r border-gray-800/50">
+                                <span class="text-white font-bold uppercase">{{ ev.nama }}</span>
+                                <br><span class="text-cyan-500 font-black text-[9px] uppercase tracking-tighter">{{ ev.rank or '-' }}</span>
+                                <br><span class="text-gray-500 font-mono text-[9px]">{{ ev.no_wa or 'Tanpa WA' }}</span>
                             </td>
-                            <td class="px-6 py-4 border-r border-gray-800/50 whitespace-nowrap text-center">
-                                <span class="text-emerald-400 font-mono font-bold text-[10px]">{{ a.waktu_masuk.strftime('%H:%M:%S') if a.waktu_masuk else '--:--:--' }}</span>
+                            <td class="px-4 py-3 border-r border-gray-800/50 whitespace-nowrap text-center">
+                                <span class="{% if ev.tipe == 'pulang' %}text-yellow-400{% else %}text-emerald-400{% endif %} font-mono font-bold text-[10px]">{{ ev.waktu_str }}</span>
                             </td>
-                            <td class="px-6 py-4 border-r border-gray-800/50 whitespace-nowrap text-center">
-                                <span class="text-rose-400 font-mono font-bold text-[10px]">{{ a.waktu_pulang.strftime('%H:%M:%S') if a.waktu_pulang else '--:--:--' }}</span>
-                            </td>
-                            <td class="px-6 py-4 border-r border-gray-800/50 text-center no-print">
-                                {% if a.foto %}
-                                    {% if 'data:image' in a.foto[:30] %}
-                                    <img src="{{ a.foto }}" onclick="openImageModal('{{ a.foto }}')" class="h-8 w-8 mx-auto rounded bg-black object-cover border border-gray-700 shadow-lg cursor-pointer hover:scale-110 transition-transform hover:border-cyan-500" title="Perbesar Foto">
+                            <td class="px-4 py-3 border-r border-gray-800/50 text-center no-print">
+                                {% if ev.foto %}
+                                    {% if 'data:image' in ev.foto[:30] %}
+                                    <img src="{{ ev.foto }}" onclick="openImageModal('{{ ev.foto }}')" class="h-8 w-8 mx-auto rounded bg-black object-cover border {% if ev.tipe == 'pulang' %}border-yellow-600 hover:border-yellow-400{% else %}border-cyan-700 hover:border-cyan-500{% endif %} shadow-lg cursor-pointer hover:scale-110 transition-transform" title="Foto {{ ev.tipe|capitalize }}">
                                     {% else %}
-                                    <div onclick="openImageModal('{{ a.foto }}')" class="h-8 w-8 mx-auto rounded bg-cyan-900/30 border border-cyan-700/50 flex items-center justify-center text-cyan-400 cursor-pointer hover:scale-110 transition-transform hover:bg-cyan-900/50" title="Lihat Dokumen">
+                                    <div onclick="openImageModal('{{ ev.foto }}')" class="h-8 w-8 mx-auto rounded bg-cyan-900/30 border border-cyan-700/50 flex items-center justify-center text-cyan-400 cursor-pointer hover:scale-110 transition-transform hover:bg-cyan-900/50" title="Lihat Dokumen">
                                         <i class="fa-solid fa-file-lines text-[10px]"></i>
                                     </div>
                                     {% endif %}
@@ -101,38 +100,59 @@
                                 <span class="text-[8px] text-gray-700 italic">N/A</span>
                                 {% endif %}
                             </td>
-                            <td class="px-6 py-4 border-r border-gray-800/50 text-center no-print">
-                                {% if a.tanda_tangan %}
-                                <div class="h-8 w-12 mx-auto bg-white rounded p-0.5 border border-gray-400 cursor-pointer hover:scale-110 transition-transform hover:border-cyan-500" onclick="openImageModal('{{ a.tanda_tangan }}')" title="Perbesar Tanda Tangan">
-                                    <img src="{{ a.tanda_tangan }}" class="h-full w-full object-contain pointer-events-none">
+                            <td class="px-4 py-3 border-r border-gray-800/50 text-center no-print">
+                                {% if ev.tanda_tangan %}
+                                <div class="h-6 w-10 mx-auto bg-white rounded-sm p-0.5 border {% if ev.tipe == 'pulang' %}border-yellow-500 hover:border-yellow-400{% else %}border-gray-400 hover:border-cyan-500{% endif %} cursor-pointer hover:scale-110 transition-transform" onclick="openImageModal('{{ ev.tanda_tangan }}')" title="TTD {{ ev.tipe|capitalize }}">
+                                    <img src="{{ ev.tanda_tangan }}" class="h-full w-full object-contain pointer-events-none">
                                 </div>
                                 {% else %}
                                 <span class="text-[8px] text-gray-700 italic">N/A</span>
                                 {% endif %}
                             </td>
-                            <td class="px-6 py-4 border-r border-gray-800/50 whitespace-nowrap">
-                                {% if a.latitude and a.longitude %}
-                                <a href="https://www.google.com/maps?q={{ a.latitude }},{{ a.longitude }}" target="_blank" class="flex flex-col gap-0.5 font-mono text-cyan-400 hover:text-cyan-300 transition-colors" title="Buka di Google Maps">
-                                    <span class="font-bold">{{ a.latitude[:10] }}</span>
-                                    <span class="text-[9px]">{{ a.longitude[:10] }}</span>
-                                </a>
+                            <td class="px-4 py-3 border-r border-gray-800/50 whitespace-nowrap text-center">
+                                {% if ev.tipe == 'pulang' %}
+                                <span class="text-[8px] text-gray-500 italic uppercase">Sesuai Masuk</span>
                                 {% else %}
-                                <span class="text-[8px] text-gray-700 italic uppercase">Lokasi tidak tersedia</span>
+                                    {% if ev.latitude and ev.longitude %}
+                                    <a href="https://www.google.com/maps?q={{ ev.latitude }},{{ ev.longitude }}" target="_blank" class="flex flex-col gap-0.5 font-mono text-cyan-400 hover:text-cyan-300 transition-colors" title="Buka di Google Maps">
+                                        <span class="font-bold text-[9px]">{{ ev.latitude[:8] }}</span>
+                                        <span class="text-[8px]">{{ ev.longitude[:8] }}</span>
+                                    </a>
+                                    {% else %}
+                                    <span class="text-[8px] text-gray-700 italic uppercase">N/A</span>
+                                    {% endif %}
                                 {% endif %}
                             </td>
-                            <td class="px-6 py-4 text-center">
-                                <div class="flex items-center justify-center gap-1.5 font-black uppercase tracking-tighter {% if a.status|lower == 'hadir' %}text-emerald-500{% elif a.status|lower == 'terlambat' %}text-amber-500{% elif a.status|lower == 'izin' or a.status|lower == 'ijin' %}text-cyan-500{% else %}text-rose-500{% endif %}">
-                                    <i class="fa-solid fa-circle text-[6px]"></i> 
-                                    {% if a.status|lower == 'izin' or a.status|lower == 'ijin' %}Izin{% else %}{{ a.status }}{% endif %}
+                            <td class="px-4 py-3 text-center">
+                                {% if ev.tipe == 'pulang' %}
+                                <div class="inline-flex items-center justify-center gap-1.5 px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 rounded-lg text-[9px] font-black uppercase tracking-wider">
+                                    <i class="fa-solid fa-house-chimney"></i> {{ ev.keterangan or 'Pulang' }}
                                 </div>
-                                {% if a.keterangan %}
-                                <p class="text-[9px] text-gray-600 italic mt-1">{{ a.keterangan }}</p>
+                                {% else %}
+                                    {% set lower_status = ev.status|lower %}
+                                    {% if lower_status == 'hadir' %}
+                                        <div class="inline-flex items-center justify-center gap-1.5 px-3 py-1 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded-lg text-[9px] font-black uppercase tracking-wider">
+                                            <i class="fa-solid fa-check"></i> Masuk: Hadir
+                                        </div>
+                                    {% elif lower_status == 'terlambat' %}
+                                        <div class="inline-flex items-center justify-center gap-1.5 px-3 py-1 bg-amber-500/20 border border-amber-500/30 text-amber-400 rounded-lg text-[9px] font-black uppercase tracking-wider">
+                                            <i class="fa-solid fa-clock"></i> Masuk: Terlambat
+                                        </div>
+                                    {% elif lower_status in ['izin', 'ijin'] %}
+                                        <div class="inline-flex items-center justify-center gap-1.5 px-3 py-1 bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 rounded-lg text-[9px] font-black uppercase tracking-wider">
+                                            <i class="fa-solid fa-envelope"></i> Izin
+                                        </div>
+                                    {% else %}
+                                        <div class="inline-flex items-center justify-center gap-1.5 px-3 py-1 bg-rose-500/20 border border-rose-500/30 text-rose-400 rounded-lg text-[9px] font-black uppercase tracking-wider">
+                                            <i class="fa-solid fa-notes-medical"></i> {{ ev.status }}
+                                        </div>
+                                    {% endif %}
                                 {% endif %}
                             </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="8" class="px-8 py-20 text-center text-gray-600 font-bold uppercase tracking-widest text-xs">Data tidak ditemukan</td>
+                            <td colspan="7" class="px-8 py-20 text-center text-gray-600 font-bold uppercase tracking-widest text-xs">Data tidak ditemukan</td>
                         </tr>
                         {% endfor %}
                     </tbody>

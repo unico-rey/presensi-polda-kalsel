@@ -123,14 +123,14 @@
                             {% for a in recent_absensi %}
                             <tr class="hover:bg-cyan-500/[0.02] transition-colors group">
                                 <td class="px-8 py-6">
-                                    <div class="text-white font-black text-base">{{ a.waktu }}</div>
-                                    <div class="text-[10px] text-gray-500 font-bold uppercase tracking-tight">{{
+                                    <div class="{% if a.tipe == 'pulang' %}text-yellow-400{% else %}text-white{% endif %} font-black text-base">{{ a.waktu_str }}</div>
+                                    <div class="text-[10px] text-gray-500 font-bold uppercase tracking-tight mt-1">{{
                                         a.tanggal }}</div>
                                 </td>
                                 <td class="px-8 py-6">
                                     <div class="flex items-center gap-3">
                                         <div
-                                            class="h-10 w-10 rounded-xl overflow-hidden bg-gray-900 border border-gray-700 flex-shrink-0">
+                                            class="h-10 w-10 rounded-xl overflow-hidden bg-gray-900 border {% if a.tipe == 'pulang' %}border-yellow-600{% else %}border-gray-700{% endif %} flex-shrink-0">
                                             {% if a.foto %}
                                                 {% if 'data:image' in a.foto[:30] %}
                                                 <img src="{{ a.foto }}" class="h-full w-full object-cover">
@@ -152,16 +152,27 @@
                                     </div>
                                 </td>
                                 <td class="px-8 py-6 text-center">
-                                    {% if a.status == 'Hadir' %}
-                                    <span
-                                        class="px-3 py-1.5 bg-emerald-500/10 text-emerald-500 rounded-lg text-[10px] font-black uppercase tracking-widest ring-1 ring-emerald-500/20">Hadir</span>
-                                    {% elif a.status == 'Terlambat' %}
-                                    <span
-                                        class="px-3 py-1.5 bg-amber-500/10 text-amber-500 rounded-lg text-[10px] font-black uppercase tracking-widest ring-1 ring-amber-500/20">Terlambat</span>
+                                    {% set lower_status = a.status|lower %}
+                                    {% if a.tipe == 'pulang' %}
+                                        <div class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                                            <i class="fa-solid fa-house-chimney"></i> {{ a.keterangan or 'Pulang' }}
+                                        </div>
+                                    {% elif lower_status == 'hadir' %}
+                                        <div class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                                            <i class="fa-solid fa-check"></i> Hadir
+                                        </div>
+                                    {% elif lower_status == 'terlambat' %}
+                                        <div class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-amber-500/20 border border-amber-500/30 text-amber-400 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                                            <i class="fa-solid fa-clock"></i> Terlambat
+                                        </div>
+                                    {% elif lower_status in ['izin', 'ijin'] %}
+                                        <div class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                                            <i class="fa-solid fa-envelope"></i> Izin
+                                        </div>
                                     {% else %}
-                                    <span
-                                        class="px-3 py-1.5 bg-rose-500/10 text-rose-500 rounded-lg text-[10px] font-black uppercase tracking-widest ring-1 ring-rose-500/20">{{
-                                        a.status }}</span>
+                                        <div class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-rose-500/20 border border-rose-500/30 text-rose-400 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                                            <i class="fa-solid fa-notes-medical"></i> {{ a.status }}
+                                        </div>
                                     {% endif %}
                                 </td>
                                 <td class="px-8 py-6">
