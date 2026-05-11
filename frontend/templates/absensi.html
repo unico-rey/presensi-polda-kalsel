@@ -123,12 +123,7 @@
                 Izin
               </div>
             </label>
-            <label class="w-full">
-              <input type="radio" name="tipe" value="cuti" onclick="toggleCamera(false)" class="hidden peer">
-              <div class="text-center py-2 rounded-xl cursor-pointer transition-all peer-checked:bg-pink-600 peer-checked:text-white hover:bg-white/5 text-gray-400 font-bold text-[10px] border border-white/5 uppercase">
-                Cuti
-              </div>
-            </label>
+
             <label class="w-full">
               <input type="radio" name="tipe" value="pulang_siang" onclick="toggleCamera(true)" class="hidden peer">
               <div class="text-center py-2 rounded-xl cursor-pointer transition-all peer-checked:bg-yellow-500 peer-checked:text-black hover:bg-white/5 text-gray-400 font-bold text-[10px] border border-white/5 uppercase">
@@ -427,7 +422,7 @@
             };
             reader.readAsDataURL(file);
         } else {
-            if (['sakit', 'cuti', 'ijin'].includes(document.querySelector('input[name="tipe"]:checked').value)) {
+            if (['sakit', 'ijin'].includes(document.querySelector('input[name="tipe"]:checked').value)) {
                 photoInput.value = '';
             }
         }
@@ -522,7 +517,7 @@
             e.preventDefault();
             return false;
         }
-        if (['cuti', 'ijin'].includes(type) && !photoInput.value) {
+        if (type === 'ijin' && !photoInput.value) {
             alert("Harap lampirkan Foto Bukti / Surat Anda terlebih dahulu!");
             e.preventDefault();
             return false;

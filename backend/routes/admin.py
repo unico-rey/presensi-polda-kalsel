@@ -15,9 +15,8 @@ templates = Jinja2Templates(directory="frontend/templates")
 
 def check_admin(request: Request, db: Session):
     email = request.cookies.get("user_email")
-    if not email: return False
-    if email == "admin": return True
-    return db.query(Admin).filter(Admin.email == email).first() is not None
+    if not email: return None
+    return db.query(Admin).filter(Admin.email == email).first()
 
 @router.get("/dashboard", response_class=HTMLResponse)
 def admin_dashboard(request: Request, db: Session = Depends(get_db)):
@@ -81,8 +80,12 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
         recap_this.append({"nama": ang.nama, "percentage": pct})
     recap_this.sort(key=lambda x: x["percentage"], reverse=True)
 
+    admin = check_admin(request, db)
+    if not admin: return RedirectResponse("/auth/login")
+    
     return templates.TemplateResponse("admin_dashboard.html", {
         "request": request,
+        "admin": admin,
         "counts": counts,
         "recent_absensi": recent_absensi,
         "recap_this": recap_this
@@ -90,14 +93,15 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/anggota", response_class=HTMLResponse)
 def admin_anggota_view(request: Request, search: str = None, db: Session = Depends(get_db)):
-    if not check_admin(request, db): return RedirectResponse("/auth/login")
+    admin = check_admin(request, db)
+    if not admin: return RedirectResponse("/auth/login")
     q = db.query(Anggota)
     if search:
         q = q.filter(Anggota.nama.ilike(f"%{search}%"))
     anggota = q.order_by(Anggota.nama.asc()).all()
     jabatans = db.query(Jabatan).all()
     pangkats = db.query(Pangkat).all()
-    return templates.TemplateResponse("anggota_list.html", {"request": request, "anggota": anggota, "jabatans": jabatans, "pangkats": pangkats, "search": search or ""})
+    return templates.TemplateResponse("anggota_list.html", {"request": request, "admin": admin, "anggota": anggota, "jabatans": jabatans, "pangkats": pangkats, "search": search or ""})
 
 import uuid
 import csv
@@ -270,12 +274,13 @@ async def import_csv_anggota(request: Request, file: UploadFile = File(...), db:
 @router.get("/anggota/edit/{id_anggota}", response_class=HTMLResponse)
 
 def admin_edit_anggota_form(id_anggota: str, request: Request, db: Session = Depends(get_db)):
-    if not check_admin(request, db): return RedirectResponse("/auth/login")
+    admin = check_admin(request, db)
+    if not admin: return RedirectResponse("/auth/login")
     anggota = db.query(Anggota).filter(Anggota.id_anggota == id_anggota).first()
     jabatans = db.query(Jabatan).all()
     pangkats = db.query(Pangkat).all()
     if not anggota: return RedirectResponse("/admin/anggota", status_code=302)
-    return templates.TemplateResponse("edit_anggota.html", {"request": request, "anggota": anggota, "jabatans": jabatans, "pangkats": pangkats})
+    return templates.TemplateResponse("edit_anggota.html", {"request": request, "admin": admin, "anggota": anggota, "jabatans": jabatans, "pangkats": pangkats})
 
 @router.post("/anggota/edit/{id_anggota}")
 async def admin_edit_anggota_submit(id_anggota: str, request: Request, db: Session = Depends(get_db)):
@@ -304,10 +309,11 @@ async def admin_edit_anggota_submit(id_anggota: str, request: Request, db: Sessi
 
 @router.get("/master/jabatan", response_class=HTMLResponse)
 def admin_master_jabatan(request: Request, db: Session = Depends(get_db)):
-    if not check_admin(request, db): return RedirectResponse("/auth/login")
+    admin = check_admin(request, db)
+    if not admin: return RedirectResponse("/auth/login")
     jabatans = db.query(Jabatan).all()
     pangkats = db.query(Pangkat).all()
-    return templates.TemplateResponse("admin_master_jabatan.html", {"request": request, "jabatans": jabatans, "pangkats": pangkats})
+    return templates.TemplateResponse("admin_master_jabatan.html", {"request": request, "admin": admin, "jabatans": jabatans, "pangkats": pangkats})
 
 @router.post("/master/jabatan/tambah")
 def tambah_jabatan(nama: str = Form(...), db: Session = Depends(get_db)):
@@ -341,10 +347,11 @@ def hapus_pangkat(id: int = Form(...), db: Session = Depends(get_db)):
 
 @router.get("/master/pengaturan", response_class=HTMLResponse)
 def admin_master_pengaturan(request: Request, db: Session = Depends(get_db)):
-    if not check_admin(request, db): return RedirectResponse("/auth/login")
+    admin = check_admin(request, db)
+    if not admin: return RedirectResponse("/auth/login")
     peng = db.query(Pengaturan).all()
     settings = {p.kunci: p.nilai for p in peng}
-    return templates.TemplateResponse("admin_master_pengaturan.html", {"request": request, "settings": settings})
+    return templates.TemplateResponse("admin_master_pengaturan.html", {"request": request, "admin": admin, "settings": settings})
 
 @router.post("/master/pengaturan/update")
 async def update_pengaturan(request: Request, db: Session = Depends(get_db)):
@@ -485,7 +492,8 @@ def trigger_reminder_pulang(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/absensi", response_class=HTMLResponse)
 def admin_absensi_list(request: Request, start_date: str = None, end_date: str = None, month: str = None, search: str = None, order: str = "desc", page: int = 1, db: Session = Depends(get_db)):
-    if not check_admin(request, db): return RedirectResponse("/auth/login")
+    admin = check_admin(request, db)
+    if not admin: return RedirectResponse("/auth/login")
     q = db.query(Absensi, Anggota.nama, Anggota.pangkat, Anggota.no_wa).join(Anggota, Absensi.id_anggota == Anggota.id_anggota)
     if param := search:
         q = q.filter(Anggota.nama.ilike(f"%{param}%"))
@@ -511,6 +519,7 @@ def admin_absensi_list(request: Request, start_date: str = None, end_date: str =
     filters = {"start_date": start_date, "end_date": end_date, "month": month, "search": search, "order": order}
     return templates.TemplateResponse("admin_absensi_list.html", {
         "request": request,
+        "admin": admin,
         "absensi": absensi_results,
         "filters": filters,
         "page": page,
@@ -529,10 +538,11 @@ async def bulk_delete_absensi(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/cuti", response_class=HTMLResponse)
 def admin_cuti(request: Request, db: Session = Depends(get_db)):
-    if not check_admin(request, db): return RedirectResponse("/auth/login")
+    admin = check_admin(request, db)
+    if not admin: return RedirectResponse("/auth/login")
     cuti_req = db.query(Cuti, Anggota.nama).join(Anggota, Cuti.id_anggota == Anggota.id_anggota).order_by(desc(Cuti.created_at)).all()
     anggota = db.query(Anggota).all()
-    return templates.TemplateResponse("admin_cuti.html", {"request": request, "requests": cuti_req, "anggota": anggota})
+    return templates.TemplateResponse("admin_cuti.html", {"request": request, "admin": admin, "requests": cuti_req, "anggota": anggota})
 
 @router.post("/cuti/tambah")
 async def tambah_cuti(request: Request, db: Session = Depends(get_db)):
@@ -567,9 +577,10 @@ def hapus_cuti(id: int = Form(...), db: Session = Depends(get_db)):
 
 @router.get("/peta-absensi", response_class=HTMLResponse)
 def admin_peta_absensi(request: Request, db: Session = Depends(get_db)):
-    if not check_admin(request, db): return RedirectResponse("/auth/login")
+    admin = check_admin(request, db)
+    if not admin: return RedirectResponse("/auth/login")
     peng = {p.kunci: p.nilai for p in db.query(Pengaturan).all()}
-    return templates.TemplateResponse("admin_map_view.html", {"request": request, "settings": peng})
+    return templates.TemplateResponse("admin_map_view.html", {"request": request, "admin": admin, "settings": peng})
 
 @router.get("/api/live-locations")
 def live_locations(db: Session = Depends(get_db)):

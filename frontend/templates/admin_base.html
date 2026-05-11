@@ -66,7 +66,7 @@
                 Lokasi & Jam Kerja
             </a>
 
-            <p class="px-4 text-[10px] font-black text-gray-500 uppercase tracking-widest mt-8 mb-3">Laporan & Cuti</p>
+            <p class="px-4 text-[10px] font-black text-gray-500 uppercase tracking-widest mt-8 mb-3">Laporan</p>
 
             <a href="/admin/absensi" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-bold text-sm {% if request.url.path == '/admin/absensi' %}active{% endif %}">
                 <i class="fa-solid fa-file-invoice text-lg w-6"></i>
@@ -83,10 +83,10 @@
         <div class="p-6 border-t border-[#1f4068] bg-[#0d223f]/40">
             <div class="flex items-center gap-3 mb-4">
                 <div class="h-10 w-10 rounded-full bg-cyan-500 flex items-center justify-center font-black text-white text-xs ring-4 ring-cyan-500/10">
-                    ADM
+                    {{ admin.nama[:3].upper() if admin else 'ADM' }}
                 </div>
                 <div class="overflow-hidden">
-                    <p class="text-xs font-black text-white truncate">Administrator Utama</p>
+                    <p class="text-xs font-black text-white truncate">{{ admin.nama if admin else 'Administrator' }}</p>
                     <p class="text-[9px] text-cyan-400 font-bold uppercase">Online Now</p>
                 </div>
             </div>
