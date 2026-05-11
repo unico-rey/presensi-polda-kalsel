@@ -7,7 +7,8 @@ if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 
 from backend.db.database import SessionLocal, engine
-from backend.models.models import Base, Jabatan, Pangkat
+from backend.models.models import Base, Jabatan, Pangkat, Admin
+import uuid
 
 def seed_data():
     db = SessionLocal()
@@ -48,6 +49,17 @@ def seed_data():
         exists = db.query(Jabatan).filter(Jabatan.nama == j_name).first()
         if not exists:
             db.add(Jabatan(nama=j_name))
+            
+    print("Menambahkan Admin Default...")
+    exists_admin = db.query(Admin).first()
+    if not exists_admin:
+        db.add(Admin(
+            id_admin=str(uuid.uuid4())[:8],
+            nama="Administrator",
+            email="admin",
+            password="1234"
+        ))
+        print("Admin default (admin/1234) berhasil ditambahkan.")
 
     try:
         db.commit()
