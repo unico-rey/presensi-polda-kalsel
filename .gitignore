@@ -1,0 +1,16 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+.env
+*.db
+*.sqlite3
+cloudflared.exe
+debug_log.txt
+error.txt
+error_log.txt
+server_log.txt
+.DS_Store

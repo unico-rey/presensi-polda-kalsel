@@ -1,0 +1,122 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Master Data Jabatan & Pangkat{% endblock %}
+{% block page_title %}Master Data Jabatan & Pangkat{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- JABATAN SECTION -->
+    <div class="space-y-6">
+        <div class="flex justify-between items-center bg-gray-900/40 p-6 rounded-[2rem] border border-[#1f4068]">
+            <div>
+                <h2 class="text-lg font-black text-white uppercase tracking-tight">Manajemen Jabatan</h2>
+            </div>
+            <button onclick="document.getElementById('modalTambahJabatan').classList.remove('hidden')" class="bg-cyan-500 text-gray-900 px-4 py-2 rounded-xl font-black text-[10px] hover:bg-cyan-400 transition-all uppercase">
+                + Tambah
+            </button>
+        </div>
+
+        <div class="bg-[#0a192f]/80 rounded-[2rem] border border-[#1f4068] shadow-2xl overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-gray-900/70 text-gray-500 text-[10px] uppercase font-black tracking-widest">
+                    <tr>
+                        <th class="px-6 py-4">Nama Jabatan</th>
+                        <th class="px-6 py-4 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-800 text-sm">
+                    {% for j in jabatans %}
+                    <tr class="hover:bg-cyan-500/[0.02] transition-colors group">
+                        <td class="px-6 py-4 font-bold text-white uppercase text-xs">{{ j.nama }}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex justify-center">
+                                <form action="/admin/master/jabatan/hapus" method="POST" data-confirm="Hapus jabatan ini?">
+                                    <input type="hidden" name="id" value="{{ j.id }}">
+                                    <button type="submit" class="h-8 w-8 bg-red-500/10 text-red-500 rounded-lg flex items-center justify-center hover:bg-red-500 hover:text-white transition-all">
+                                        <i class="fa-solid fa-trash-can text-[10px]"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- PANGKAT SECTION -->
+    <div class="space-y-6">
+        <div class="flex justify-between items-center bg-gray-900/40 p-6 rounded-[2rem] border border-[#1f4068]">
+            <div>
+                <h2 class="text-lg font-black text-white uppercase tracking-tight">Manajemen Pangkat</h2>
+            </div>
+            <button onclick="document.getElementById('modalTambahPangkat').classList.remove('hidden')" class="bg-indigo-500 text-white px-4 py-2 rounded-xl font-black text-[10px] hover:bg-indigo-400 transition-all uppercase">
+                + Tambah
+            </button>
+        </div>
+
+        <div class="bg-[#0a192f]/80 rounded-[2rem] border border-[#1f4068] shadow-2xl overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-gray-900/70 text-gray-500 text-[10px] uppercase font-black tracking-widest">
+                    <tr>
+                        <th class="px-6 py-4">Nama Pangkat</th>
+                        <th class="px-6 py-4 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-800 text-sm">
+                    {% for p in pangkats %}
+                    <tr class="hover:bg-indigo-500/[0.02] transition-colors group">
+                        <td class="px-6 py-4 font-bold text-white uppercase text-xs">{{ p.nama }}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex justify-center">
+                                <form action="/admin/master/pangkat/hapus" method="POST" data-confirm="Hapus pangkat ini?">
+                                    <input type="hidden" name="id" value="{{ p.id }}">
+                                    <button type="submit" class="h-8 w-8 bg-red-500/10 text-red-500 rounded-lg flex items-center justify-center hover:bg-red-500 hover:text-white transition-all">
+                                        <i class="fa-solid fa-trash-can text-[10px]"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tambah Jabatan -->
+<div id="modalTambahJabatan" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-6">
+    <div class="bg-[#0a192f] border border-[#1f4068] w-full max-w-md rounded-[2.5rem] p-10">
+        <h3 class="text-xl font-black text-white tracking-tighter uppercase mb-6">Tambah Jabatan</h3>
+        <form action="/admin/master/jabatan/tambah" method="POST" class="space-y-6">
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-cyan-500/60 uppercase tracking-widest ml-1">Nama Jabatan</label>
+                <input type="text" name="nama" required placeholder="Contoh: KAPOLDA" class="w-full bg-gray-900 border border-[#1f4068] rounded-2xl py-4 px-5 text-white outline-none font-bold uppercase text-xs">
+            </div>
+            <div class="flex gap-4">
+                <button type="button" onclick="document.getElementById('modalTambahJabatan').classList.add('hidden')" class="flex-1 py-4 bg-gray-800 text-gray-400 font-black text-[10px] rounded-2xl uppercase tracking-widest">Batal</button>
+                <button type="submit" class="flex-1 py-4 bg-cyan-600 text-white font-black text-[10px] rounded-2xl uppercase tracking-widest shadow-xl shadow-cyan-600/20">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Tambah Pangkat -->
+<div id="modalTambahPangkat" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-6">
+    <div class="bg-[#0a192f] border border-[#1f4068] w-full max-w-md rounded-[2.5rem] p-10">
+        <h3 class="text-xl font-black text-white tracking-tighter uppercase mb-6">Tambah Pangkat</h3>
+        <form action="/admin/master/pangkat/tambah" method="POST" class="space-y-6">
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-indigo-500/60 uppercase tracking-widest ml-1">Nama Pangkat</label>
+                <input type="text" name="nama" required placeholder="Contoh: IRJEN POL" class="w-full bg-gray-900 border border-[#1f4068] rounded-2xl py-4 px-5 text-white outline-none font-bold uppercase text-xs">
+            </div>
+            <div class="flex gap-4">
+                <button type="button" onclick="document.getElementById('modalTambahPangkat').classList.add('hidden')" class="flex-1 py-4 bg-gray-800 text-gray-400 font-black text-[10px] rounded-2xl uppercase tracking-widest">Batal</button>
+                <button type="submit" class="flex-1 py-4 bg-indigo-600 text-white font-black text-[10px] rounded-2xl uppercase tracking-widest shadow-xl shadow-indigo-600/20">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

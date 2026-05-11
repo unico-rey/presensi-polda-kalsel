@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>Statistik Kehadiran - Polda</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .tab-active { background: #06b6d4; color: #000; }
+  </style>
+</head>
+<body class="bg-[#0b1c2d] text-gray-100 min-h-screen p-6 font-sans" style="background: linear-gradient(135deg, #0b1c2d, #000814);">
+  <div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header & Profile -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between bg-[#0a192f]/60 p-6 rounded-3xl border border-[#1f4068] backdrop-blur-xl gap-6">
+      <div class="flex items-center gap-4">
+        <img src="/static/logo-polri.png" alt="Logo Polri" class="h-16 w-auto drop-shadow-[0_0_10px_rgba(0,102,255,0.4)]">
+        <div>
+          <h1 class="text-2xl font-black text-white tracking-widest uppercase">STATISTIK <span class="text-cyan-500">PRESENSI</span></h1>
+          <div class="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[10px] uppercase font-bold tracking-wider text-[#9bb7d4]">
+            <span class="flex items-center gap-1"><span class="text-cyan-500/50">NRP:</span> {{ anggota.NRP }}</span>
+            <span class="flex items-center gap-1"><span class="text-cyan-500/50">Pangkat:</span> {{ anggota.pangkat }}</span>
+            <span class="flex items-center gap-1"><span class="text-cyan-500/50">Jabatan:</span> {{ anggota.jabatan }}</span>
+          </div>
+          <p class="mt-2 text-sm font-bold text-white uppercase">{{ anggota.nama }}</p>
+        </div>
+      </div>
+      <a href="/absensi/" class="px-6 py-2 bg-gray-800/50 border border-gray-700 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-cyan-500 hover:text-gray-900 transition-all text-gray-400">Kembali</a>
+    </div>
+
+    <!-- Month Selector -->
+    <div class="flex gap-4 overflow-x-auto pb-4 no-scrollbar {{ 'hidden' if monthly_data|length <= 1 }}">
+      {% for m_key, m_data in monthly_data.items() %}
+      <button onclick="switchMonth('{{ m_key }}')" id="tab-{{ m_key }}" 
+        class="month-tab whitespace-nowrap px-6 py-3 rounded-xl font-bold text-xs transition-all border border-[#1f4068] {{ 'tab-active' if m_key == current_month else 'text-gray-500 hover:text-white' }}">
+        {{ m_data.name }}
+      </button>
+      {% endfor %}
+    </div>
+
+    <!-- Percentage Card -->
+    <div class="bg-gradient-to-r from-cyan-600 to-indigo-600 p-8 rounded-2xl shadow-xl shadow-cyan-500/20 text-center">
+      <p class="text-cyan-100 text-sm font-semibold uppercase tracking-wider">Persentase Kehadiran <span id="label-month"></span></p>
+      <h2 class="text-6xl font-black mt-2"><span id="display-percentage">0</span>%</h2>
+      <p class="mt-4 text-cyan-200 text-xs italic">*Dihitung dari total hari kerja di bulan tersebut</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      {% for label, color, summary_key in [('Hadir', 'green-400', 'Hadir'), ('Terlambat', 'yellow-400', 'Terlambat'), ('Sakit', 'blue-400', 'Sakit'), ('Ijin', 'gray-400', 'Ijin'), ('Tidak Hadir', 'rose-500', 'Tidak Hadir')] %}
+      <div class="bg-[#0a192f]/80 p-4 rounded-2xl border border-[#1f4068] shadow-lg">
+        <p class="text-[#9bb7d4] text-[10px] font-bold uppercase tracking-widest">{{ label }}</p>
+        <p class="text-3xl font-black text-{{ color }} mt-1" id="count-{{ summary_key }}">0</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="md:col-span-1 bg-[#0a192f]/80 p-6 rounded-3xl border border-[#1f4068] shadow-xl">
+        <h3 class="text-sm font-bold text-white uppercase tracking-widest mb-6">Distribusi Status</h3>
+        <canvas id="statsChart"></canvas>
+      </div>
+
+      <div class="md:col-span-2 bg-[#0a192f]/80 p-6 rounded-3xl border border-[#1f4068] shadow-xl overflow-hidden">
+        <h3 class="text-sm font-bold text-white uppercase tracking-widest mb-6">Riwayat Bulan Ini</h3>
+        <div class="overflow-y-auto max-h-[400px]">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="text-[#9bb7d4] text-[10px] uppercase font-black border-b border-[#1f4068]">
+                <th class="pb-3 px-2">Tanggal</th>
+                <th class="pb-3 px-2">Masuk</th>
+                <th class="pb-3 px-2">Pulang</th>
+                <th class="pb-3 px-2">Foto</th>
+                <th class="pb-3 px-2">Tanda Tangan</th>
+                <th class="pb-3 px-2">Lokasi</th>
+                <th class="pb-3 px-2">Status</th>
+              </tr>
+            </thead>
+            <tbody id="history-body" class="text-gray-200">
+              <!-- JS Injected -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Modal -->
+  <div id="imageModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4 cursor-pointer" onclick="closeImageModal()">
+      <div class="relative bg-gray-900 border border-[#1f4068] p-2 rounded-2xl shadow-2xl max-w-2xl max-h-[90vh] overflow-hidden" onclick="event.stopPropagation()">
+          <img id="modalImageDisplay" class="w-auto h-auto max-w-full max-h-[85vh] rounded-xl object-contain bg-white">
+          <button onclick="closeImageModal()" class="absolute top-4 right-4 h-8 w-8 flex items-center justify-center bg-rose-500 hover:bg-rose-400 text-white rounded-full shadow-lg transition-colors text-lg font-bold">
+              ✕
+          </button>
+      </div>
+  </div>
+
+  <script>
+    function openImageModal(src) {
+        const modal = document.getElementById('imageModal');
+        const img = document.getElementById('modalImageDisplay');
+        img.src = src;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeImageModal() {
+        const modal = document.getElementById('imageModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+    const monthlyData = {{ monthly_data | tojson | safe }};
+    let currentChart = null;
+    let currentKey = '{{ current_month }}';
+
+    function switchMonth(key) {
+      currentKey = key;
+      const data = monthlyData[key];
+      
+      // Update Tabs
+      document.querySelectorAll('.month-tab').forEach(t => t.classList.remove('tab-active', 'text-gray-500', 'hover:text-white'));
+      document.querySelectorAll('.month-tab').forEach(t => t.classList.add('text-gray-500', 'hover:text-white'));
+      document.getElementById('tab-' + key).classList.add('tab-active');
+      document.getElementById('tab-' + key).classList.remove('text-gray-500', 'hover:text-white');
+
+      // Update Header
+      document.getElementById('label-month').textContent = '(' + data.name + ')';
+      document.getElementById('display-percentage').textContent = data.percentage;
+
+      // Update Counts
+      for (const [sKey, count] of Object.entries(data.summary)) {
+        const el = document.getElementById('count-' + sKey);
+        if (el) el.textContent = count;
+      }
+
+      // Update Chart
+      updateChart(data.summary);
+
+      // Update Table
+      updateTable(data.stats);
+    }
+
+    function updateChart(summary) {
+      const ctx = document.getElementById('statsChart').getContext('2d');
+      if (currentChart) currentChart.destroy();
+      
+      currentChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Hadir', 'Terlambat', 'Sakit', 'Ijin', 'Tidak Hadir'],
+          datasets: [{
+            data: [summary.Hadir, summary.Terlambat, summary.Sakit, summary.Ijin, summary['Tidak Hadir']],
+            backgroundColor: ['#4ade80', '#fbbf24', '#60a5fa', '#374151', '#f43f5e'],
+            borderWidth: 0,
+            hoverOffset: 10
+          }]
+        },
+        options: {
+          plugins: { legend: { position: 'bottom', labels: { color: '#9bb7d4', font: { size: 10, weight: 'bold' }, padding: 20 } } },
+          cutout: '75%', responsive: true, maintainAspectRatio: true
+        }
+      });
+    }
+
+    function updateTable(stats) {
+      const body = document.getElementById('history-body');
+      body.innerHTML = '';
+      
+      stats.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-[#1f4068]/30 hover:bg-[#1f4068]/10 transition-colors';
+        
+        let statusHtml = '';
+        if (s.status === 'Hadir') statusHtml = '<span class="px-2 py-1 bg-green-500/10 text-green-400 rounded-lg text-[10px] font-bold border border-green-500/20">HADIR</span>';
+        else if (s.status === 'Terlambat') statusHtml = '<span class="px-2 py-1 bg-yellow-500/10 text-yellow-400 rounded-lg text-[10px] font-bold border border-yellow-500/20">TERLAMBAT</span>';
+        else if (s.status === 'Sakit') statusHtml = '<span class="px-2 py-1 bg-blue-500/10 text-blue-400 rounded-lg text-[10px] font-bold border border-blue-500/20">SAKIT</span>';
+        else if (s.status === 'Tidak Hadir') statusHtml = '<span class="px-2 py-1 bg-rose-500/10 text-rose-500 rounded-lg text-[10px] font-bold border border-rose-500/20">TIDAK HADIR</span>';
+        else statusHtml = `<span class="px-2 py-1 bg-gray-500/10 text-gray-400 rounded-lg text-[10px] font-bold border border-gray-500/20">${s.status}</span>`;
+
+        const date = new Date(s.tanggal);
+        const dateStr = date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+        const timeStr = s.waktu_masuk ? new Date(s.waktu_masuk).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--';
+        const pulangStr = s.waktu_pulang ? new Date(s.waktu_pulang).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '--:--:--';
+
+        const fotoHtml = s.foto ? `<img src="${s.foto}" onclick="openImageModal('${s.foto}')" class="h-8 w-8 rounded bg-black object-cover border border-gray-700 cursor-pointer hover:scale-110 transition-transform hover:border-cyan-500" title="Perbesar Foto">` : `<span class="text-[8px] text-gray-600 italic">N/A</span>`;
+        const ttdHtml = s.tanda_tangan ? `<div class="h-8 w-12 bg-white rounded p-0.5 cursor-pointer hover:scale-110 transition-transform hover:border-cyan-500" onclick="openImageModal('${s.tanda_tangan}')" title="Perbesar Tanda Tangan"><img src="${s.tanda_tangan}" class="h-full w-full object-contain pointer-events-none"></div>` : `<span class="text-[8px] text-gray-600 italic">N/A</span>`;
+        const locHtml = (s.latitude && s.longitude) ? `<a href="https://www.google.com/maps?q=${s.latitude},${s.longitude}" target="_blank" class="flex flex-col font-mono text-cyan-400 hover:text-cyan-300 transition-colors" title="Buka di Google Maps"><span class="font-bold text-[9px]">${s.latitude.substring(0,8)}</span><span class="text-[8px]">${s.longitude.substring(0,8)}</span></a>` : `<span class="text-[8px] text-gray-600 italic">N/A</span>`;
+
+        tr.innerHTML = `
+          <td class="py-4 px-2 text-xs font-mono whitespace-nowrap">${dateStr}</td>
+          <td class="py-4 px-2 text-[10px] font-mono text-emerald-400">${timeStr}</td>
+          <td class="py-4 px-2 text-[10px] font-mono text-rose-400">${pulangStr}</td>
+          <td class="py-4 px-2">${fotoHtml}</td>
+          <td class="py-4 px-2">${ttdHtml}</td>
+          <td class="py-4 px-2">${locHtml}</td>
+          <td class="py-4 px-2">${statusHtml} ${s.keterangan ? `<div class="mt-1 text-[9px] text-[#9bb7d4] italic font-medium max-w-[100px] truncate" title="${s.keterangan}">${s.keterangan}</div>` : ''}</td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    // Init first load
+    switchMonth(currentKey);
+  </script>
+</body>
+</html>

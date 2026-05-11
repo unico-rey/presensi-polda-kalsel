@@ -1,0 +1,239 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Pengaturan Sistem{% endblock %}
+{% block page_title %}Pengaturan Sistem{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+    #pengaturan-map { height: 350px; border-radius: 1.5rem; border: 1px solid #1f4068; cursor: crosshair; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+    <!-- Form Ganti Akun Admin -->
+    <div class="bg-[#0a192f]/80 rounded-[2.5rem] border border-rose-500/30 shadow-2xl p-10 space-y-8 mt-8">
+        <div class="flex items-center gap-4 mb-2">
+            <div class="p-3 bg-rose-500/10 rounded-2xl text-rose-400">
+                <i class="fa-solid fa-user-shield text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-black text-white uppercase tracking-tight">Kredensial Administrator</h3>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Ubah email & password login Admin</p>
+            </div>
+        </div>
+
+        <form action="/admin/master/pengaturan/update-admin" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 bg-gray-900/40 rounded-3xl border border-gray-800">
+            <div class="space-y-2">
+                <label class="text-[9px] font-bold text-gray-500 uppercase">Email / Username Admin Baru</label>
+                <input type="text" name="admin_email" placeholder="contoh: admin@polda.go.id" required class="w-full bg-gray-800 border-gray-700 rounded-xl px-4 py-3 text-white font-mono focus:ring-1 focus:ring-rose-500 outline-none">
+            </div>
+            <div class="space-y-2">
+                <label class="text-[9px] font-bold text-gray-500 uppercase">Password Baru</label>
+                <input type="password" name="admin_password" placeholder="Kosongkan jika tidak ingin mengubah password" class="w-full bg-gray-800 border-gray-700 rounded-xl px-4 py-3 text-white font-mono focus:ring-1 focus:ring-rose-500 outline-none">
+            </div>
+            <div class="md:col-span-2 flex justify-end">
+                <button type="submit" class="bg-rose-600 text-white px-8 py-3 rounded-xl font-black text-xs hover:bg-rose-500 transition-all shadow-xl shadow-rose-600/20 uppercase tracking-[0.2em]">
+                    Perbarui Kredensial
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <form action="/admin/master/pengaturan/update" method="POST" class="space-y-8">
+        <!-- Section: Jam Kerja -->
+        <div class="bg-[#0a192f]/80 rounded-[2.5rem] border border-[#1f4068] shadow-2xl p-10 space-y-8">
+            <div class="flex items-center gap-4 mb-2">
+                <div class="p-3 bg-indigo-500/10 rounded-2xl text-indigo-400">
+                    <i class="fa-solid fa-clock text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-white uppercase tracking-tight">Pengaturan Jam Kerja</h3>
+                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Batas waktu presensi masuk & pulang</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Senin - Kamis -->
+                <div class="space-y-4 p-6 bg-gray-900/40 rounded-3xl border border-gray-800">
+                    <p class="text-xs font-black text-cyan-500 uppercase tracking-widest">Senin - Kamis</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="text-[9px] font-bold text-gray-500 uppercase">Mulai</label>
+                            <input type="time" name="jam_masuk_normal" value="{{ settings.get('jam_masuk_normal', '08:00') }}" class="w-full bg-gray-800 border-gray-700 rounded-xl px-4 py-3 text-white font-mono focus:ring-1 focus:ring-cyan-500 outline-none">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[9px] font-bold text-gray-500 uppercase">Pulang</label>
+                            <input type="time" name="jam_pulang_normal" value="{{ settings.get('jam_pulang_normal', '15:00') }}" class="w-full bg-gray-800 border-gray-700 rounded-xl px-4 py-3 text-white font-mono focus:ring-1 focus:ring-cyan-500 outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Jumat -->
+                <div class="space-y-4 p-6 bg-gray-900/40 rounded-3xl border border-gray-800">
+                    <p class="text-xs font-black text-rose-500 uppercase tracking-widest">Jumat</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="text-[9px] font-bold text-gray-500 uppercase">Mulai</label>
+                            <input type="time" name="jam_masuk_jumat" value="{{ settings.get('jam_masuk_jumat', '07:00') }}" class="w-full bg-gray-800 border-gray-700 rounded-xl px-4 py-3 text-white font-mono focus:ring-1 focus:ring-cyan-500 outline-none">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[9px] font-bold text-gray-500 uppercase">Pulang</label>
+                            <input type="time" name="jam_pulang_jumat" value="{{ settings.get('jam_pulang_jumat', '15:30') }}" class="w-full bg-gray-800 border-gray-700 rounded-xl px-4 py-3 text-white font-mono focus:ring-1 focus:ring-cyan-500 outline-none">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Geofencing Lokasi -->
+        <div class="bg-[#0a192f]/80 rounded-[2.5rem] border border-[#1f4068] shadow-2xl p-10 space-y-8">
+            <div class="flex items-center gap-4 mb-2">
+                <div class="p-3 bg-emerald-500/10 rounded-2xl text-emerald-400">
+                    <i class="fa-solid fa-location-dot text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-white uppercase tracking-tight">Geofencing & Lokasi</h3>
+                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Koordinat pusat Polda Kalsel & radius</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="space-y-2">
+                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Latitude</label>
+                    <input type="text" id="latInput" name="polda_lat" value="{{ settings.get('polda_lat', '-3.488661') }}" class="w-full bg-gray-800 border-gray-700 rounded-xl px-4 py-3 text-white font-mono focus:ring-1 focus:ring-cyan-500 outline-none">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Longitude</label>
+                    <input type="text" id="lonInput" name="polda_lon" value="{{ settings.get('polda_lon', '114.831166') }}" class="w-full bg-gray-800 border-gray-700 rounded-xl px-4 py-3 text-white font-mono focus:ring-1 focus:ring-cyan-500 outline-none">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Radius (Meter)</label>
+                    <input type="number" id="radInput" name="geofence_radius" value="{{ settings.get('geofence_radius', '200') }}" class="w-full bg-gray-800 border-gray-700 rounded-xl px-4 py-3 text-white font-mono focus:ring-1 focus:ring-cyan-500 outline-none">
+                </div>
+
+                <!-- Toggle Geofence -->
+                <div class="md:col-span-3 space-y-4 p-6 bg-gray-900/40 rounded-3xl border border-gray-800">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-black text-emerald-500 uppercase tracking-widest">Batasan Jarak (Geofencing)</p>
+                            <label class="text-[10px] text-gray-400 font-bold">Kunci presensi jika anggota berada di luar radius peta (Hanya berlaku untuk Hadir/Terlambat/Pulang Siang)</label>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="hidden" name="geofence_active" value="0">
+                            <input type="checkbox" name="geofence_active" value="1" class="sr-only peer" {% if settings.get('geofence_active', '1') == '1' %}checked{% endif %}>
+                            <div class="w-11 h-6 bg-gray-700 peer-focus:ring-2 peer-focus:ring-cyan-500 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="pengaturan-map" class="mt-6 shadow-2xl"></div>
+            <p class="text-[10px] text-cyan-500 mt-2 font-bold italic text-center">💡 Klik pada peta untuk mengubah koordinat pusat, atau geser pin secara manual.</p>
+        </div>
+
+        <!-- Section: Pengaturan Notifikasi -->
+        <div class="bg-[#0a192f]/80 rounded-[2.5rem] border border-[#1f4068] shadow-2xl p-10 space-y-8">
+            <div class="flex items-center gap-4 mb-2">
+                <div class="p-3 bg-amber-500/10 rounded-2xl text-amber-400">
+                    <i class="fa-solid fa-bell text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-white uppercase tracking-tight">Pengaturan Notifikasi</h3>
+                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Pengingat otomatis sebelum jam masuk &amp; pulang</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 p-6 bg-gray-900/40 rounded-3xl border border-gray-800">
+                <p class="text-xs font-black text-violet-500 uppercase tracking-widest">Push Notification</p>
+                <div class="flex items-center justify-between">
+                    <label class="text-sm text-gray-300 font-semibold">Aktifkan notifikasi ke HP/Laptop</label>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="hidden" name="notif_push_active" value="0">
+                        <input type="checkbox" name="notif_push_active" value="1" class="sr-only peer" {% if settings.get('notif_push_active', '1') == '1' %}checked{% endif %}>
+                        <div class="w-11 h-6 bg-gray-700 peer-focus:ring-2 peer-focus:ring-cyan-500 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+                    </label>
+                </div>
+                <p class="text-[9px] text-gray-600 font-bold">Notifikasi muncul otomatis di layar anggota saat buka halaman presensi, sesuai jam yang dikonfigurasi.</p>
+            </div>
+
+            <!-- Waktu Reminder -->
+            <div class="space-y-4 p-6 bg-gray-900/40 rounded-3xl border border-gray-800">
+                <p class="text-xs font-black text-cyan-500 uppercase tracking-widest">Waktu Pengingat</p>
+                <div class="flex items-center gap-4">
+                    <input type="number" name="notif_menit_sebelum" value="{{ settings.get('notif_menit_sebelum', '30') }}" min="5" max="120" class="w-24 bg-gray-800 border-gray-700 rounded-xl px-4 py-3 text-white font-mono text-center focus:ring-1 focus:ring-cyan-500 outline-none">
+                    <span class="text-sm text-gray-400 font-bold">menit sebelum jam masuk & pulang</span>
+                </div>
+                <p class="text-[9px] text-gray-600 font-bold">Notifikasi akan dikirim otomatis N menit sebelum jam masuk dan jam pulang (default: 30 menit)</p>
+            </div>
+
+
+        </div>
+
+        <!-- Submit -->
+        <div class="flex justify-end p-4">
+            <button type="submit" class="bg-cyan-600 text-white px-12 py-5 rounded-2xl font-black text-sm hover:bg-cyan-500 transition-all shadow-2xl shadow-cyan-600/30 uppercase tracking-[0.2em]">
+                Simpan Perubahan Sistem
+            </button>
+        </div>
+    </form>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // ---- Flash Message ----
+    // Toast dikendalikan oleh admin_base.html
+
+    // ---- Map Logic ----
+    let currentLat = parseFloat(document.getElementById('latInput').value) || -3.488661;
+    let currentLon = parseFloat(document.getElementById('lonInput').value) || 114.831166;
+    let currentRad = parseFloat(document.getElementById('radInput').value) || 200;
+
+    const map = L.map('pengaturan-map').setView([currentLat, currentLon], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    let marker = L.marker([currentLat, currentLon], {draggable: true}).addTo(map);
+    let circle = L.circle([currentLat, currentLon], {
+        color: '#06b6d4', fillColor: '#06b6d4', fillOpacity: 0.2, radius: currentRad
+    }).addTo(map);
+
+    function updateInputs(lat, lon) {
+        document.getElementById('latInput').value = lat.toFixed(7);
+        document.getElementById('lonInput').value = lon.toFixed(7);
+        marker.setLatLng([lat, lon]);
+        circle.setLatLng([lat, lon]);
+    }
+
+    marker.on('dragend', function(e) {
+        const pos = marker.getLatLng();
+        updateInputs(pos.lat, pos.lng);
+    });
+
+    map.on('click', function(e) {
+        updateInputs(e.latlng.lat, e.latlng.lng);
+    });
+
+    document.getElementById('radInput').addEventListener('input', function(e) {
+        const r = parseFloat(e.target.value) || 200;
+        circle.setRadius(r);
+    });
+    
+    document.getElementById('latInput').addEventListener('input', function(e) {
+        const l = parseFloat(e.target.value);
+        if(!isNaN(l)) updateInputs(l, marker.getLatLng().lng);
+    });
+    
+    document.getElementById('lonInput').addEventListener('input', function(e) {
+        const l = parseFloat(e.target.value);
+        if(!isNaN(l)) updateInputs(marker.getLatLng().lat, l);
+    });
+
+});
+
+
+</script>
+{% endblock %}
+

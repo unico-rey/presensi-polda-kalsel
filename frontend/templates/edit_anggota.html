@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Anggota - Presensi Polda Kalsel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#0b0f19] text-gray-300 min-h-screen p-8">
+    <div class="max-w-2xl mx-auto space-y-8">
+        <div class="flex justify-between items-center">
+            <h2 class="text-3xl font-black text-cyan-400">Edit Data Anggota</h2>
+            <a href="/admin/anggota" class="text-cyan-500 hover:underline">← Kembali</a>
+        </div>
+
+        {% if request.query_params.get('error') %}
+        <div class="bg-red-500/10 border-l-4 border-red-500 p-4 rounded-xl text-red-400 text-sm">
+            ⚠️ {{ request.query_params.get('error') }}
+        </div>
+        {% endif %}
+
+        <div class="bg-gray-800 p-8 rounded-3xl border border-gray-700 shadow-2xl">
+            <form action="/admin/anggota/edit/{{ anggota.id_anggota }}" method="post" class="space-y-6">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-2">ID Anggota (Read Only)</label>
+                    <input type="text" value="{{ anggota.id_anggota }}" disabled class="w-full bg-gray-900/50 border-gray-700 rounded-xl p-4 text-gray-500 font-mono">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Nama Lengkap</label>
+                        <input type="text" name="nama" value="{{ anggota.nama }}" required class="w-full bg-gray-900 border-gray-700 rounded-xl p-4 focus:ring-2 focus:ring-cyan-500 text-white transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Email</label>
+                        <input type="email" name="email" value="{{ anggota.email }}" required class="w-full bg-gray-900 border-gray-700 rounded-xl p-4 focus:ring-2 focus:ring-cyan-500 text-white transition-all">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Pangkat</label>
+                        <select name="pangkat" class="w-full bg-gray-900 border-gray-700 rounded-xl p-4 focus:ring-2 focus:ring-cyan-500 text-white transition-all appearance-none cursor-pointer">
+                            <option value="">-- Pilih Pangkat --</option>
+                            {% for p in pangkats %}
+                            <option value="{{ p.nama }}" {{ 'selected' if p.nama == anggota.pangkat }}>{{ p.nama }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-2">NRP</label>
+                        <input type="number" name="NRP" value="{{ anggota.NRP or '' }}" class="w-full bg-gray-900 border-gray-700 rounded-xl p-4 focus:ring-2 focus:ring-cyan-500 text-white font-mono transition-all">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Jabatan</label>
+                        <select name="jabatan" class="w-full bg-gray-900 border-gray-700 rounded-xl p-4 focus:ring-2 focus:ring-cyan-500 text-white transition-all appearance-none cursor-pointer">
+                            <option value="">-- Pilih Jabatan --</option>
+                            {% for j in jabatans %}
+                            <option value="{{ j.nama }}" {{ 'selected' if j.nama == anggota.jabatan }}>{{ j.nama }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-2">No WhatsApp</label>
+                        <input type="text" name="no_wa" value="{{ anggota.no_wa or '' }}" placeholder="08xxxxxxxxxx" class="w-full bg-gray-900 border-gray-700 rounded-xl p-4 focus:ring-2 focus:ring-cyan-500 text-white font-mono transition-all">
+                    </div>
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-black py-4 rounded-2xl shadow-xl shadow-cyan-500/20 transition-all uppercase tracking-widest">
+                        Simpan Perubahan Data
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

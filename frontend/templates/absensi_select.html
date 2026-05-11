@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>Pilih Tipe Presensi</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+<body class="bg-[#0b1c2d] text-gray-100 min-h-screen flex items-center justify-center p-6" style="background: linear-gradient(135deg, #0b1c2d, #000814);">
+  <div class="max-w-md w-full space-y-8 glass p-8 rounded-[2.5rem] border border-[#1f4068] shadow-2xl">
+    <div class="text-center">
+      <h1 class="text-3xl font-black text-cyan-400 uppercase tracking-tighter">Halo, {{ anggota.nama }}</h1>
+      <p class="mt-2 text-xs font-bold text-gray-500 uppercase tracking-widest">Silakan pilih menu presensi Anda</p>
+    </div>
+
+    <div class="space-y-4 mt-8">
+      {% if not sudah_masuk %}
+      <a href="/absensi/scan?tipe=masuk" class="block w-full py-6 px-4 bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500 hover:text-white text-emerald-500 rounded-2xl transition-all shadow-xl shadow-emerald-500/10 text-center font-black uppercase text-sm tracking-widest">
+        <i class="fa-solid fa-right-to-bracket mb-2 text-2xl block"></i>
+        Presensi Masuk
+      </a>
+      {% else %}
+        {% if not sudah_pulang %}
+        <div class="p-6 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-center mb-4">
+            <h3 class="text-emerald-400 font-black uppercase text-xs mb-1">SUDAH MASUK</h3>
+            <p class="text-[10px] text-gray-400 font-bold uppercase">{{ rekam.waktu_masuk.strftime('%H:%M:%S') }}</p>
+        </div>
+        <a href="/absensi/scan?tipe=pulang" class="block w-full py-6 px-4 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500 hover:text-white text-amber-500 rounded-2xl transition-all shadow-xl shadow-amber-500/10 text-center font-black uppercase text-sm tracking-widest">
+            <i class="fa-solid fa-right-from-bracket mb-2 text-2xl block"></i>
+            Presensi Pulang
+        </a>
+        {% else %}
+        <div class="p-6 bg-cyan-500/10 border border-cyan-500/30 rounded-2xl text-center mb-4">
+            <h3 class="text-cyan-400 font-black uppercase text-xs mb-1">PRESENSI SELESAI HARI INI</h3>
+            <p class="text-[10px] text-gray-400 font-bold uppercase">Terima kasih atas dedikasi Anda!</p>
+        </div>
+        {% endif %}
+      {% endif %}
+    </div>
+    
+    <!-- Notification Status Banner -->
+    <div id="notifBanner" class="mt-6 p-4 bg-indigo-500/10 border border-indigo-500/30 rounded-2xl text-center cursor-pointer hover:bg-indigo-500/20 transition-all" onclick="window.registerPushNotification && window.registerPushNotification()">
+        <div class="flex items-center justify-center gap-3">
+            <span id="notifStatus"><i class="fa-solid fa-bell text-gray-400"></i></span>
+            <div>
+                <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Pengingat Otomatis ke HP/Laptop</p>
+                <p id="notifMessage" class="text-[9px] text-gray-500 font-bold mt-0.5">Klik "Izinkan" saat popup muncul agar notifikasi absen muncul di HP/Laptop Anda</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center pt-6 mt-6 border-t border-white/5">
+        {% if anggota.id_anggota == 'ADMIN' %}
+        <a href="/admin/dashboard" class="text-[10px] font-black text-cyan-500 uppercase tracking-widest hover:text-white transition-all">
+            <i class="fa-solid fa-gauge-high mr-1"></i> Dashboard Admin
+        </a>
+        {% else %}
+        <a href="/anggota/dashboard/{{ anggota.id_anggota }}" class="text-[10px] font-black text-gray-500 uppercase tracking-widest hover:text-cyan-400 transition-colors">
+            <i class="fa-solid fa-gauge mr-1"></i> Dashboard Anggota
+        </a>
+        {% endif %}
+    </div>
+  </div>
+
+  <!-- Push Notification Registration -->
+  <script src="/static/js/push-register.js"></script>
+</body>
+</html>

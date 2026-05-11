@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard{% endblock %} - presensi_polda_kalsel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .sidebar-link.active { background: linear-gradient(to right, rgba(6, 182, 212, 0.2), transparent); border-left: 4px solid #06b6d4; color: #fff; }
+        .sidebar-link:hover:not(.active) { background: rgba(255, 255, 255, 0.05); color: #fff; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0b1c2d; }
+        ::-webkit-scrollbar-thumb { background: #1f4068; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
+    </style>
+    {% block head %}{% endblock %}
+    {% block head_extra %}{% endblock %}
+</head>
+<body class="bg-[#0b1c2d] text-gray-300 h-screen w-screen overflow-hidden flex font-sans" style="background: linear-gradient(135deg, #0b1c2d, #000814);">
+    
+    <!-- Mobile Sidebar Overly -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 w-72 h-full bg-[#0a192f] border-r border-[#1f4068] flex flex-col z-50 shadow-2xl transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+        <!-- Logo Area -->
+        <div class="p-8 border-b border-[#1f4068]">
+            <a href="/absensi/" class="flex items-center gap-4 group">
+                <div class="p-2 bg-white rounded-xl shadow-lg group-hover:scale-110 transition-all">
+                    <img src="/static/logo-polri.png" alt="Logo Polri" class="h-10 w-auto">
+                </div>
+                <div>
+                    <h1 class="text-xl font-black text-white tracking-tighter uppercase leading-none">PRESENSI</h1>
+                    <h2 class="text-[10px] font-bold text-cyan-400 tracking-[0.2em] uppercase">POLDA KALSEL</h2>
+                </div>
+            </a>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto p-4 space-y-1 py-6">
+            <p class="px-4 text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Main Overview</p>
+            
+            <a href="/admin/dashboard" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-bold text-sm {% if request.url.path == '/admin/dashboard' %}active{% endif %}">
+                <i class="fa-solid fa-chart-pie text-lg w-6"></i>
+                Dashboard
+            </a>
+
+            <p class="px-4 text-[10px] font-black text-gray-500 uppercase tracking-widest mt-8 mb-3">Data Master</p>
+
+            <a href="/admin/anggota" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-bold text-sm {% if request.url.path == '/admin/anggota' %}active{% endif %}">
+                <i class="fa-solid fa-users text-lg w-6"></i>
+                Data Anggota
+            </a>
+
+            <a href="/admin/master/jabatan" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-bold text-sm {% if request.url.path == '/admin/master/jabatan' %}active{% endif %}">
+                <i class="fa-solid fa-id-badge text-lg w-6"></i>
+                Jabatan / Pangkat
+            </a>
+
+            <a href="/admin/master/pengaturan" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-bold text-sm {% if request.url.path == '/admin/master/pengaturan' %}active{% endif %}">
+                <i class="fa-solid fa-sliders text-lg w-6"></i>
+                Lokasi & Jam Kerja
+            </a>
+
+            <p class="px-4 text-[10px] font-black text-gray-500 uppercase tracking-widest mt-8 mb-3">Laporan & Cuti</p>
+
+            <a href="/admin/absensi" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-bold text-sm {% if request.url.path == '/admin/absensi' %}active{% endif %}">
+                <i class="fa-solid fa-file-invoice text-lg w-6"></i>
+                Rekap Presensi
+            </a>
+
+            <a href="/admin/peta-absensi" class="sidebar-link flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-bold text-sm {% if request.url.path == '/admin/peta-absensi' %}active{% endif %}">
+                <i class="fa-solid fa-map-location-dot text-lg w-6"></i>
+                Peta Lokasi
+            </a>
+
+        </nav>
+        <!-- Profile Bottom -->
+        <div class="p-6 border-t border-[#1f4068] bg-[#0d223f]/40">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="h-10 w-10 rounded-full bg-cyan-500 flex items-center justify-center font-black text-white text-xs ring-4 ring-cyan-500/10">
+                    ADM
+                </div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-black text-white truncate">Administrator Utama</p>
+                    <p class="text-[9px] text-cyan-400 font-bold uppercase">Online Now</p>
+                </div>
+            </div>
+            <form action="/logout" method="get">
+                <button class="w-full bg-red-500/10 text-red-500 py-3 rounded-xl text-xs font-black hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    LOGOUT SYSTEM
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col h-full overflow-hidden min-w-0">
+        <!-- Topbar -->
+        <header class="h-20 border-b border-[#1f4068] bg-[#0a192f]/50 flex items-center justify-between px-4 lg:px-8 z-40 sticky top-0 backdrop-blur-md">
+            <div class="flex items-center gap-4">
+                <!-- Mobile Toggle Button -->
+                <button onclick="toggleSidebar()" class="lg:hidden h-10 w-10 flex items-center justify-center rounded-xl bg-gray-800 text-cyan-400 border border-gray-700">
+                    <i class="fa-solid fa-bars-staggered"></i>
+                </button>
+                <div>
+                <h1 class="text-lg font-black text-white tracking-tight uppercase">{% block page_title %}Dashboard Overview{% endblock %}</h1>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5" id="realtimeDate"></p>
+            </div>
+            
+            <div class="flex items-center gap-8">
+                <div class="text-right">
+                    <p class="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] mb-0.5">Waktu Server</p>
+                    <p class="text-xl font-black text-white font-mono tracking-tighter" id="realtimeClock">00:00:00</p>
+                </div>
+                <div class="h-10 w-[1px] bg-[#1f4068]"></div>
+
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <main class="flex-1 overflow-y-auto p-8 pb-20 custom-scrollbar relative">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const isHidden = sidebar.classList.contains('-translate-x-full');
+            
+            if (isHidden) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            
+            const dateEl = document.getElementById('realtimeDate');
+            const clockEl = document.getElementById('realtimeClock');
+            
+            if (dateEl) dateEl.textContent = now.toLocaleDateString('id-ID', dateOptions);
+            if (clockEl) clockEl.textContent = now.toLocaleTimeString('id-ID', timeOptions);
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        // ---- Global Toast Notification System ----
+        document.addEventListener('DOMContentLoaded', () => {
+            // Buat container toast jika belum ada
+            let toastContainer = document.getElementById('toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'toast-container';
+                toastContainer.className = 'fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-3 pointer-events-none transition-all duration-500';
+                document.body.appendChild(toastContainer);
+            }
+
+            function showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                
+                const bgColor = type === 'success' ? 'bg-emerald-500/10' : 'bg-rose-500/10';
+                const borderColor = type === 'success' ? 'border-emerald-500/50' : 'border-rose-500/50';
+                const textColor = type === 'success' ? 'text-emerald-400' : 'text-rose-400';
+                const icon = type === 'success' ? 'fa-check-circle' : 'fa-circle-exclamation';
+                
+                toast.className = `flex items-center gap-4 px-6 py-4 rounded-2xl border ${borderColor} ${bgColor} backdrop-blur-md shadow-2xl shadow-black/50 transform -translate-y-10 opacity-0 transition-all duration-500 pointer-events-auto max-w-md w-full`;
+                
+                toast.innerHTML = `
+                    <i class="fa-solid ${icon} ${textColor} text-2xl"></i>
+                    <p class="text-sm font-bold text-white leading-snug">${message}</p>
+                `;
+                
+                toastContainer.appendChild(toast);
+                
+                requestAnimationFrame(() => {
+                    toast.classList.remove('-translate-y-10', 'opacity-0');
+                    toast.classList.add('translate-y-0', 'opacity-100');
+                });
+                
+                setTimeout(() => {
+                    toast.classList.remove('translate-y-0', 'opacity-100');
+                    toast.classList.add('-translate-y-10', 'opacity-0');
+                    setTimeout(() => toast.remove(), 500);
+                }, 6000);
+            }
+
+            // Expose globally
+            window.showToast = showToast;
+
+            // Handle URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            let hasMessage = false;
+
+            if(urlParams.has('msg')) {
+                showToast(urlParams.get('msg').replace(/_/g, ' '), 'success');
+                hasMessage = true;
+            }
+            if(urlParams.has('error')) {
+                let err = urlParams.get('error').replace(/_/g, ' ');
+                if(err === 'format excel error') err = 'Gagal memproses file! Pastikan file format Excel (.xlsx).';
+                else if(err === 'file kosong') err = 'File yang diunggah kosong.';
+                showToast(err, 'error');
+                hasMessage = true;
+            }
+
+            if (hasMessage) {
+                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.replaceState({path:newUrl}, '', newUrl);
+            }
+        });
+        // ---- Global Confirm Modal System ----
+        let formToSubmit = null;
+        let customConfirmResolve = null;
+
+        function showConfirmModal(message, onConfirm = null) {
+            let modal = document.getElementById('custom-confirm-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'custom-confirm-modal';
+                modal.className = 'fixed inset-0 z-[10000] hidden items-center justify-center p-4';
+                modal.innerHTML = `
+                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeConfirmModal()"></div>
+                    <div class="relative bg-[#0a192f] border border-[#1f4068] rounded-2xl p-6 shadow-2xl max-w-sm w-full transform transition-all scale-95 opacity-0" id="custom-confirm-box">
+                        <div class="text-center">
+                            <div class="w-16 h-16 rounded-full bg-rose-500/10 flex items-center justify-center mx-auto mb-4">
+                                <i class="fa-solid fa-triangle-exclamation text-rose-500 text-3xl"></i>
+                            </div>
+                            <h3 class="text-lg font-black text-white mb-2">Konfirmasi</h3>
+                            <p class="text-sm text-gray-400 mb-6" id="custom-confirm-message"></p>
+                            <div class="flex gap-3">
+                                <button type="button" onclick="closeConfirmModal()" class="flex-1 py-3 px-4 bg-gray-800 hover:bg-gray-700 text-white font-bold rounded-xl transition-all text-xs uppercase tracking-wider">Batal</button>
+                                <button type="button" id="custom-confirm-btn" class="flex-1 py-3 px-4 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl shadow-lg shadow-rose-600/20 transition-all text-xs uppercase tracking-wider">Ya, Lanjutkan</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+
+                document.getElementById('custom-confirm-btn').addEventListener('click', () => {
+                    if(formToSubmit) {
+                        formToSubmit.submit();
+                    }
+                    if(customConfirmResolve) {
+                        customConfirmResolve(true);
+                    }
+                    closeConfirmModal();
+                });
+            }
+
+            document.getElementById('custom-confirm-message').textContent = message;
+            const box = document.getElementById('custom-confirm-box');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            requestAnimationFrame(() => {
+                box.classList.remove('scale-95', 'opacity-0');
+                box.classList.add('scale-100', 'opacity-100');
+            });
+            
+            customConfirmResolve = onConfirm;
+        }
+
+        function closeConfirmModal() {
+            const box = document.getElementById('custom-confirm-box');
+            if(!box) return;
+            box.classList.remove('scale-100', 'opacity-100');
+            box.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                const modal = document.getElementById('custom-confirm-modal');
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                formToSubmit = null;
+                if(customConfirmResolve) {
+                    customConfirmResolve(false);
+                    customConfirmResolve = null;
+                }
+            }, 200);
+        }
+
+        // Intercept form submissions with data-confirm attribute
+        document.addEventListener('submit', (e) => {
+            const confirmMsg = e.target.getAttribute('data-confirm');
+            if (confirmMsg) {
+                e.preventDefault();
+                formToSubmit = e.target;
+                showConfirmModal(confirmMsg);
+            }
+        });
+
+        // Expose globally
+        window.showConfirmModal = showConfirmModal;
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

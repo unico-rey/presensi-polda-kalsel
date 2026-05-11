@@ -1,0 +1,298 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Data Presensi Lengkap{% endblock %}
+{% block page_title %}Data Presensi Lengkap{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Filters & Actions -->
+    <!-- Filters & Actions -->
+    <div class="flex flex-col lg:flex-row gap-6 items-stretch lg:items-end justify-between no-print bg-gray-900/40 p-6 lg:p-8 rounded-[2rem] border border-[#1f4068]">
+        <form action="/admin/absensi" method="GET" class="flex flex-col md:flex-row flex-wrap gap-4 lg:gap-6 items-stretch md:items-end">
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Rentang Tanggal</label>
+                <div class="flex gap-2">
+                    <input type="date" name="start_date" value="{{ filters.start_date or '' }}" class="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-xs text-white focus:ring-1 focus:ring-cyan-500 outline-none">
+                    <span class="text-gray-600 self-center">s/d</span>
+                    <input type="date" name="end_date" value="{{ filters.end_date or '' }}" class="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-xs text-white focus:ring-1 focus:ring-cyan-500 outline-none">
+                </div>
+            </div>
+            
+            <!-- Or Month Filter -->
+            <div class="space-y-2 hidden md:flex items-center self-end pb-3 text-gray-500 font-bold uppercase text-[10px]">ATAU</div>
+            
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Bulan</label>
+                <input type="month" name="month" value="{{ filters.month or '' }}" class="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-xs text-white focus:ring-1 focus:ring-cyan-500 outline-none">
+            </div>
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Pencarian</label>
+                <input type="text" name="search" value="{{ filters.search or '' }}" placeholder="Cari Nama / NRP..." class="w-64 bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-xs text-white focus:ring-1 focus:ring-cyan-500 outline-none font-bold">
+            </div>
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Urutan</label>
+                <select name="order" class="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-xs text-white focus:ring-1 focus:ring-cyan-500 outline-none font-bold">
+                    <option value="desc" {{ 'selected' if filters.order == 'desc' }}>Terbaru</option>
+                    <option value="asc" {{ 'selected' if filters.order == 'asc' }}>Terlama</option>
+                </select>
+            </div>
+            <button type="submit" class="bg-cyan-600 text-white px-8 py-3.5 rounded-xl font-black text-[10px] hover:bg-cyan-500 transition-all shadow-xl shadow-cyan-600/20 uppercase tracking-widest flex items-center justify-center gap-2">
+                <i class="fa-solid fa-magnifying-glass"></i> CARI DATA
+            </button>
+        </form>
+        
+
+    </div>
+
+    <!-- Main Table -->
+    <div class="bg-[#0a192f]/80 rounded-[2.5rem] border border-[#1f4068] shadow-2xl overflow-hidden print:border-0 print:shadow-none">
+        <div class="p-8 hidden print:block text-center border-b border-gray-800 mb-6">
+            <h1 class="text-2xl font-black uppercase">LAPORAN REKAPITULASI PRESENSI PERSONIL</h1>
+            <p class="text-xs font-bold text-gray-500 mt-2 uppercase tracking-widest">POLDA KALIMANTAN SELATAN</p>
+            {% if filters.month %}
+            <p class="text-[10px] mt-4 font-mono text-gray-600 uppercase">Periode Bulan: {{ filters.month }}</p>
+            {% elif filters.start_date and filters.end_date %}
+            <p class="text-[10px] mt-4 font-mono text-gray-600 uppercase">Periode: {{ filters.start_date }} s/d {{ filters.end_date }}</p>
+            {% endif %}
+        </div>
+
+        <form id="bulkDeleteForm" action="/admin/absensi/bulk-delete" method="POST">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-900/90 text-gray-500 text-[9px] uppercase font-black tracking-widest">
+                        <tr class="border-b border-gray-800">
+                            <th class="px-6 py-5 border-r border-gray-800/50">Tanggal</th>
+                            <th class="px-6 py-5 border-r border-gray-800/50">Nama</th>
+                            <th class="px-6 py-5 border-r border-gray-800/50">Masuk</th>
+                            <th class="px-6 py-5 border-r border-gray-800/50">Pulang</th>
+                            <th class="px-6 py-5 border-r border-gray-800/50 text-center no-print">Foto</th>
+                            <th class="px-6 py-5 border-r border-gray-800/50 text-center no-print">Tanda Tangan</th>
+                            <th class="px-6 py-5 border-r border-gray-800/50">Lokasi</th>
+                            <th class="px-6 py-5 text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-800 text-[11px]">
+                        {% for a, name, rank, no_wa in absensi %}
+                        <tr class="hover:bg-cyan-500/[0.03] transition-colors border-b border-gray-800/50">
+                            <td class="px-6 py-4 border-r border-gray-800/50 whitespace-nowrap">
+                                <span class="text-white font-mono font-bold text-[10px]">{{ a.tanggal.strftime('%d-%m-%Y') }}</span>
+                            </td>
+                            <td class="px-6 py-4 border-r border-gray-800/50">
+                                <span class="text-white font-bold uppercase">{{ name }}</span>
+                                <br><span class="text-cyan-500 font-black text-[9px] uppercase tracking-tighter">{{ rank or '-' }}</span>
+                                <br><span class="text-gray-500 font-mono text-[9px]">{{ no_wa or 'Tanpa WA' }}</span>
+                            </td>
+                            <td class="px-6 py-4 border-r border-gray-800/50 whitespace-nowrap text-center">
+                                <span class="text-emerald-400 font-mono font-bold text-[10px]">{{ a.waktu_masuk.strftime('%H:%M:%S') if a.waktu_masuk else '--:--:--' }}</span>
+                            </td>
+                            <td class="px-6 py-4 border-r border-gray-800/50 whitespace-nowrap text-center">
+                                <span class="text-rose-400 font-mono font-bold text-[10px]">{{ a.waktu_pulang.strftime('%H:%M:%S') if a.waktu_pulang else '--:--:--' }}</span>
+                            </td>
+                            <td class="px-6 py-4 border-r border-gray-800/50 text-center no-print">
+                                {% if a.foto %}
+                                    {% if 'data:image' in a.foto[:30] %}
+                                    <img src="{{ a.foto }}" onclick="openImageModal('{{ a.foto }}')" class="h-8 w-8 mx-auto rounded bg-black object-cover border border-gray-700 shadow-lg cursor-pointer hover:scale-110 transition-transform hover:border-cyan-500" title="Perbesar Foto">
+                                    {% else %}
+                                    <div onclick="openImageModal('{{ a.foto }}')" class="h-8 w-8 mx-auto rounded bg-cyan-900/30 border border-cyan-700/50 flex items-center justify-center text-cyan-400 cursor-pointer hover:scale-110 transition-transform hover:bg-cyan-900/50" title="Lihat Dokumen">
+                                        <i class="fa-solid fa-file-lines text-[10px]"></i>
+                                    </div>
+                                    {% endif %}
+                                {% else %}
+                                <span class="text-[8px] text-gray-700 italic">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 border-r border-gray-800/50 text-center no-print">
+                                {% if a.tanda_tangan %}
+                                <div class="h-8 w-12 mx-auto bg-white rounded p-0.5 border border-gray-400 cursor-pointer hover:scale-110 transition-transform hover:border-cyan-500" onclick="openImageModal('{{ a.tanda_tangan }}')" title="Perbesar Tanda Tangan">
+                                    <img src="{{ a.tanda_tangan }}" class="h-full w-full object-contain pointer-events-none">
+                                </div>
+                                {% else %}
+                                <span class="text-[8px] text-gray-700 italic">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 border-r border-gray-800/50 whitespace-nowrap">
+                                {% if a.latitude and a.longitude %}
+                                <a href="https://www.google.com/maps?q={{ a.latitude }},{{ a.longitude }}" target="_blank" class="flex flex-col gap-0.5 font-mono text-cyan-400 hover:text-cyan-300 transition-colors" title="Buka di Google Maps">
+                                    <span class="font-bold">{{ a.latitude[:10] }}</span>
+                                    <span class="text-[9px]">{{ a.longitude[:10] }}</span>
+                                </a>
+                                {% else %}
+                                <span class="text-[8px] text-gray-700 italic uppercase">Lokasi tidak tersedia</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <div class="flex items-center justify-center gap-1.5 font-black uppercase tracking-tighter {% if a.status|lower == 'hadir' %}text-emerald-500{% elif a.status|lower == 'terlambat' %}text-amber-500{% elif a.status|lower == 'izin' or a.status|lower == 'ijin' %}text-cyan-500{% else %}text-rose-500{% endif %}">
+                                    <i class="fa-solid fa-circle text-[6px]"></i> 
+                                    {% if a.status|lower == 'izin' or a.status|lower == 'ijin' %}Izin{% else %}{{ a.status }}{% endif %}
+                                </div>
+                                {% if a.keterangan %}
+                                <p class="text-[9px] text-gray-600 italic mt-1">{{ a.keterangan }}</p>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="px-8 py-20 text-center text-gray-600 font-bold uppercase tracking-widest text-xs">Data tidak ditemukan</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+
+        <!-- Pagination -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 px-8 py-5 border-t border-[#1f4068] bg-[#0d223f]/30 no-print">
+            <p class="text-[11px] text-gray-500 font-bold">
+                Menampilkan <span class="text-white font-black">{{ ((page-1)*per_page)+1 }}–{{ [page*per_page, total]|min }}</span>
+                dari <span class="text-cyan-400 font-black">{{ total }}</span> data presensi
+            </p>
+            {% if total_pages > 1 %}
+            <div class="flex items-center gap-1.5">
+                <!-- Prev -->
+                {% if page > 1 %}
+                <a href="?page={{ page-1 }}&order={{ filters.order }}{% if filters.search %}&search={{ filters.search }}{% endif %}{% if filters.month %}&month={{ filters.month }}{% endif %}{% if filters.start_date %}&start_date={{ filters.start_date }}&end_date={{ filters.end_date }}{% endif %}"
+                   class="h-8 w-8 flex items-center justify-center rounded-lg bg-gray-800 hover:bg-cyan-600 text-gray-400 hover:text-white transition-all text-xs font-black">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </a>
+                {% else %}
+                <span class="h-8 w-8 flex items-center justify-center rounded-lg bg-gray-900/50 text-gray-700 text-xs cursor-not-allowed">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </span>
+                {% endif %}
+
+                <!-- Page numbers -->
+                {% for p in range(1, total_pages+1) %}
+                    {% if p == page %}
+                    <span class="h-8 w-8 flex items-center justify-center rounded-lg bg-cyan-600 text-white text-[11px] font-black shadow-lg shadow-cyan-600/20">{{ p }}</span>
+                    {% elif p == 1 or p == total_pages or (p >= page-2 and p <= page+2) %}
+                    <a href="?page={{ p }}&order={{ filters.order }}{% if filters.search %}&search={{ filters.search }}{% endif %}{% if filters.month %}&month={{ filters.month }}{% endif %}{% if filters.start_date %}&start_date={{ filters.start_date }}&end_date={{ filters.end_date }}{% endif %}"
+                       class="h-8 w-8 flex items-center justify-center rounded-lg bg-gray-800 hover:bg-cyan-600/40 text-gray-400 hover:text-white transition-all text-[11px] font-black">{{ p }}</a>
+                    {% elif p == page-3 or p == page+3 %}
+                    <span class="h-8 flex items-center px-1 text-gray-600 text-xs">…</span>
+                    {% endif %}
+                {% endfor %}
+
+                <!-- Next -->
+                {% if page < total_pages %}
+                <a href="?page={{ page+1 }}&order={{ filters.order }}{% if filters.search %}&search={{ filters.search }}{% endif %}{% if filters.month %}&month={{ filters.month }}{% endif %}{% if filters.start_date %}&start_date={{ filters.start_date }}&end_date={{ filters.end_date }}{% endif %}"
+                   class="h-8 w-8 flex items-center justify-center rounded-lg bg-gray-800 hover:bg-cyan-600 text-gray-400 hover:text-white transition-all text-xs font-black">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </a>
+                {% else %}
+                <span class="h-8 w-8 flex items-center justify-center rounded-lg bg-gray-900/50 text-gray-700 text-xs cursor-not-allowed">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleAll(source) {
+        checkboxes = document.getElementsByName('absensi_ids');
+        for(var i=0, n=checkboxes.length;i<n;i++) {
+            checkboxes[i].checked = source.checked;
+        }
+    }
+    
+    function confirmBulkDelete() {
+        if (typeof showConfirmModal === 'function') {
+            showConfirmModal('Apakah Anda yakin ingin menghapus data yang dipilih?', function(confirmed) {
+                if (confirmed) {
+                    document.getElementById('bulkDeleteForm').submit();
+                }
+            });
+        } else {
+            if (confirm('Apakah Anda yakin ingin menghapus data yang dipilih?')) {
+                document.getElementById('bulkDeleteForm').submit();
+            }
+        }
+    }
+
+    function openImageModal(src) {
+        const modal = document.getElementById('imageModal');
+        const img = document.getElementById('modalImageDisplay');
+        const iframe = document.getElementById('modalIframeDisplay');
+        
+        if (src.startsWith('data:image/')) {
+            img.src = src;
+            img.classList.remove('hidden');
+            iframe.classList.add('hidden');
+            iframe.src = '';
+        } else {
+            iframe.src = src;
+            iframe.classList.remove('hidden');
+            img.classList.add('hidden');
+            img.src = '';
+        }
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeImageModal() {
+        const modal = document.getElementById('imageModal');
+        const iframe = document.getElementById('modalIframeDisplay');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        iframe.src = ''; // hentikan loading preview
+    }
+</script>
+
+<!-- Image & Document Modal -->
+<div id="imageModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4 cursor-pointer" onclick="closeImageModal()">
+    <div class="relative bg-gray-900 border border-gray-700 p-2 rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col items-center justify-center overflow-hidden" onclick="event.stopPropagation()">
+        <!-- Photo display -->
+        <img id="modalImageDisplay" class="hidden w-auto h-auto max-w-full max-h-[85vh] rounded-xl object-contain bg-white">
+        <!-- PDF/Doc display -->
+        <iframe id="modalIframeDisplay" class="hidden w-full h-full rounded-xl border-0 bg-white"></iframe>
+        
+        <!-- Fallback Download (appears on hover for documents) -->
+        <div id="modalDocHover" class="absolute inset-0 hidden pointer-events-none items-center justify-center flex-col opacity-0 hover:opacity-100 transition-opacity z-10 bg-black/60 backdrop-blur-sm">
+            <p class="text-cyan-400 font-bold mb-4 pointer-events-auto text-sm">Jika dokumen gagal ditampilkan, silakan unduh:</p>
+            <a id="modalDownloadBtn" href="#" download="Lampiran_Presensi" class="pointer-events-auto bg-cyan-600 hover:bg-cyan-500 text-white px-6 py-3 rounded-xl font-black uppercase tracking-widest flex items-center gap-2">
+                <i class="fa-solid fa-file-arrow-down"></i> Unduh File
+            </a>
+        </div>
+
+        <button onclick="closeImageModal()" class="absolute top-4 right-4 h-10 w-10 flex items-center justify-center bg-rose-500 hover:bg-rose-400 text-white rounded-full shadow-lg transition-colors z-50">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+    </div>
+</div>
+<script>
+    // Bind hover download for non-images
+    const moImageModal = document.getElementById('imageModal');
+    moImageModal.addEventListener('mousemove', function(e) {
+        const ifr = document.getElementById('modalIframeDisplay');
+        const hov = document.getElementById('modalDocHover');
+        if(!ifr.classList.contains('hidden')) {
+            hov.classList.remove('hidden');
+            hov.classList.add('flex');
+            document.getElementById('modalDownloadBtn').href = ifr.src;
+        } else {
+            hov.classList.remove('flex');
+            hov.classList.add('hidden');
+        }
+    });
+</script>
+    </div>
+</div>
+
+<style>
+    @media print {
+        @page { size: landscape; margin: 1cm; }
+        .no-print { display: none !important; }
+        body { background: white !important; color: black !important; }
+        /* Escape bracketed selectors if needed or use attribute selectors */
+        [class*="bg-[#0a192f]"], [class*="bg-[#0b1c2d]"], [class*="bg-gray-900/40"], [class*="bg-[#0a192f]/80"] { background: transparent !important; color: black !important; }
+        .text-white, .text-cyan-500, .text-gray-200, .text-gray-500 { color: black !important; }
+        .border, table, th, td { border-color: #333 !important; }
+        .divide-gray-800 > * + * { border-color: #333 !important; }
+        main { padding: 0 !important; }
+        .whitespace-nowrap { white-space: normal !important; }
+    }
+</style>
+{% endblock %}

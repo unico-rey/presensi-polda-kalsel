@@ -1,0 +1,167 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Permohonan Cuti{% endblock %}
+{% block page_title %}Permohonan Cuti{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Summary & Add Action -->
+    <div class="flex justify-between items-center bg-gray-900/40 p-8 rounded-[2rem] border border-[#1f4068]">
+        <div class="flex gap-8">
+            <div>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Total Permohonan</p>
+                <h4 class="text-2xl font-black text-white">{{ requests|length }}</h4>
+            </div>
+            <div>
+                <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest mb-1">Pending Review</p>
+                <h4 class="text-2xl font-black text-white">
+                    {% set pending = 0 %}
+                    {% for r, name in requests %}{% if r.status == 'Pending' %}{% set pending = pending + 1 %}{% endif %}{% endfor %}
+                    {{ pending }}
+                </h4>
+            </div>
+        </div>
+        <button onclick="document.getElementById('modalTambahCuti').classList.remove('hidden')" class="bg-cyan-500 text-gray-900 px-6 py-3 rounded-xl font-black text-xs hover:bg-cyan-400 transition-all shadow-lg shadow-cyan-500/20 flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i>
+            TAMBAH PERMOHONAN
+        </button>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-[#0a192f]/80 rounded-[2.5rem] border border-[#1f4068] shadow-2xl overflow-hidden">
+        <div class="overflow-x-auto min-h-[400px]">
+            <table class="w-full text-left">
+                <thead class="bg-gray-900/70 text-gray-500 text-[10px] uppercase font-black tracking-widest">
+                    <tr>
+                        <th class="px-8 py-5">Pemohon</th>
+                        <th class="px-8 py-5">Jenis & Durasi Cuti</th>
+                        <th class="px-8 py-5">Status</th>
+                        <th class="px-8 py-5 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-800 text-sm">
+                    {% for r, name in requests %}
+                    <tr class="hover:bg-cyan-500/[0.02] transition-colors">
+                        <td class="px-8 py-6">
+                            <div class="font-black text-white uppercase">{{ name }}</div>
+                            <div class="text-[10px] text-gray-500 uppercase font-mono tracking-tighter">ANG-{{ r.id_anggota }}</div>
+                        </td>
+                        <td class="px-8 py-6">
+                            <div class="text-cyan-500 font-black text-xs uppercase tracking-tight">{{ r.jenis_cuti }}</div>
+                            <div class="text-gray-400 text-[10px] font-bold mt-1">
+                                <i class="fa-solid fa-calendar-days mr-1"></i>
+                                {{ r.tanggal_mulai.strftime('%d/%m/%y') }} - {{ r.tanggal_selesai.strftime('%d/%m/%y') }}
+                            </div>
+                            {% if r.keterangan %}
+                            <p class="text-[10px] text-gray-600 italic mt-2 border-l-2 border-gray-800 pl-2">"{{ r.keterangan }}"</p>
+                            {% endif %}
+                        </td>
+                        <td class="px-8 py-6">
+                            {% if r.status == 'Pending' %}
+                            <span class="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[9px] font-black uppercase tracking-tighter">WAITING</span>
+                            {% elif r.status == 'Disetujui' %}
+                            <span class="px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-[9px] font-black uppercase tracking-tighter">APPROVED</span>
+                            {% else %}
+                            <span class="px-3 py-1 bg-rose-500/10 text-rose-500 rounded-full text-[9px] font-black uppercase tracking-tighter">REJECTED</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-8 py-6">
+                            <div class="flex justify-center gap-2">
+                                {% if r.status == 'Pending' %}
+                                <form action="/admin/cuti/update-status" method="POST">
+                                    <input type="hidden" name="id_cuti" value="{{ r.id }}">
+                                    <input type="hidden" name="status" value="Disetujui">
+                                    <button type="submit" class="h-9 w-9 bg-emerald-500/10 text-emerald-500 rounded-lg flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all shadow-lg" title="Setujui">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </button>
+                                </form>
+                                <form action="/admin/cuti/update-status" method="POST">
+                                    <input type="hidden" name="id_cuti" value="{{ r.id }}">
+                                    <input type="hidden" name="status" value="Ditolak">
+                                    <button type="submit" class="h-9 w-9 bg-red-500/10 text-red-500 rounded-lg flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-lg" title="Tolak">
+                                        <i class="fa-solid fa-xmark text-xs"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                                <form action="/admin/cuti/hapus" method="POST" data-confirm="Hapus permohonan ini?">
+                                    <input type="hidden" name="id" value="{{ r.id }}">
+                                    <button type="submit" class="h-9 w-9 bg-gray-500/10 text-gray-500 rounded-lg flex items-center justify-center hover:bg-red-600 hover:text-white transition-all shadow-lg" title="Hapus Data">
+                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="px-8 py-20 text-center">
+                            <div class="flex flex-col items-center gap-4 text-gray-600">
+                                <i class="fa-solid fa-calendar-xmark text-4xl"></i>
+                                <p class="text-xs font-bold uppercase tracking-widest">Belum ada permohonan cuti</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tambah Cuti -->
+<div id="modalTambahCuti" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-6">
+    <div class="bg-[#0a192f] border border-[#1f4068] w-full max-w-lg rounded-[2.5rem] p-10 shadow-3xl">
+        <div class="flex justify-between items-center mb-8">
+            <h3 class="text-xl font-black text-white tracking-tighter uppercase">Tambah Permohonan Cuti</h3>
+            <button onclick="document.getElementById('modalTambahCuti').classList.add('hidden')" class="text-gray-500 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+        
+        <form action="/admin/cuti/tambah" method="POST" class="space-y-5">
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-cyan-500/60 uppercase tracking-widest ml-1">Nama Anggota (Ketik untuk Cari)</label>
+                <input list="anggota_list" name="anggota_search" required placeholder="Cari Nama Anggota..." 
+                       class="w-full bg-gray-900 border border-[#1f4068] rounded-xl py-3 px-4 text-white font-bold text-xs outline-none focus:ring-1 focus:ring-cyan-500"
+                       onchange="document.getElementById('id_anggota_input').value = this.value.split(' - ')[0]">
+                <datalist id="anggota_list">
+                    {% for p in anggota %}
+                    <option value="{{ p.id_anggota }} - {{ p.nama }} ({{ p.pangkat or '-' }})">
+                    {% endfor %}
+                </datalist>
+                <input type="hidden" name="id_anggota" id="id_anggota_input">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-cyan-500/60 uppercase tracking-widest ml-1">Mulai</label>
+                    <input type="date" name="tanggal_mulai" required class="w-full bg-gray-900 border border-[#1f4068] rounded-xl py-3 px-4 text-white text-xs font-bold outline-none">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-cyan-500/60 uppercase tracking-widest ml-1">Selesai</label>
+                    <input type="date" name="tanggal_selesai" required class="w-full bg-gray-900 border border-[#1f4068] rounded-xl py-3 px-4 text-white text-xs font-bold outline-none">
+                </div>
+            </div>
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-cyan-500/60 uppercase tracking-widest ml-1">Jenis Cuti</label>
+                <select name="jenis_cuti" required class="w-full bg-gray-900 border border-[#1f4068] rounded-xl py-3 px-4 text-white font-bold text-xs appearance-none cursor-pointer">
+                    <option value="Cuti Tahunan">Cuti Tahunan</option>
+                    <option value="Cuti Alasan Penting">Cuti Alasan Penting</option>
+                    <option value="Cuti Sakit">Cuti Sakit</option>
+                    <option value="Cuti Besar">Cuti Besar</option>
+                </select>
+            </div>
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-cyan-500/60 uppercase tracking-widest ml-1">Keterangan / Alasan</label>
+                <textarea name="keterangan" rows="3" class="w-full bg-gray-900 border border-[#1f4068] rounded-xl py-3 px-4 text-white text-xs font-bold outline-none resize-none" placeholder="Masukkan alasan cuti..."></textarea>
+            </div>
+            
+            <div class="pt-4">
+                <button type="submit" class="w-full py-4 bg-cyan-600 text-white font-black text-[10px] rounded-2xl hover:bg-cyan-500 transition-all shadow-xl shadow-cyan-600/20 uppercase tracking-[0.2em]">
+                    SIMPAN PERMOHONAN
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

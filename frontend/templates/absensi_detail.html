@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Struk Bukti Presensi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        .glass {
+            background: rgba(10, 25, 47, 0.85); backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+        }
+        .app-text-label { font-size: 10px; color: #9ca3af; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+        .app-text-value { font-size: 16px; color: #fff; font-weight: 800; margin-bottom: 20px; }
+
+        /* === IN-APP TOAST NOTIFICATION === */
+        #toast-notif {
+            position: fixed;
+            top: -120px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            min-width: 300px;
+            max-width: 90vw;
+            background: linear-gradient(135deg, rgba(6,182,212,0.15), rgba(2,6,23,0.95));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0,243,255,0.35);
+            border-radius: 18px;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 8px 40px rgba(0,200,255,0.25), 0 0 0 1px rgba(0,243,255,0.1);
+            transition: top 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        #toast-notif.show { top: 20px; }
+        #toast-notif.hide {
+            top: -120px;
+            transition: top 0.4s ease-in;
+        }
+        .toast-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; flex-shrink: 0;
+        }
+        .toast-icon.hadir    { background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.4); }
+        .toast-icon.terlambat{ background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.4); }
+        .toast-icon.sakit    { background: rgba(239,68,68,0.2);  border: 1px solid rgba(239,68,68,0.4); }
+        .toast-icon.ijin     { background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.4); }
+        .toast-icon.pulang   { background: rgba(6,182,212,0.2);  border: 1px solid rgba(6,182,212,0.4); }
+        .toast-title { font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 2px; letter-spacing: 0.02em; }
+        .toast-body  { font-size: 11px; color: #94a3b8; line-height: 1.4; }
+        .toast-close {
+            margin-left: auto; background: none; border: none;
+            color: #64748b; font-size: 16px; cursor: pointer;
+            padding: 4px; border-radius: 8px; flex-shrink: 0;
+            transition: color 0.2s;
+        }
+        .toast-close:hover { color: #cbd5e1; }
+        .toast-progress {
+            position: absolute;
+            bottom: 0; left: 0;
+            height: 3px;
+            border-radius: 0 0 18px 18px;
+            background: linear-gradient(90deg, #06b6d4, #3b82f6);
+            animation: progress-shrink 4s linear forwards;
+        }
+        @keyframes progress-shrink {
+            from { width: 100%; }
+            to   { width: 0%; }
+        }
+    </style>
+</head>
+<body class="bg-[#020617] text-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <!-- ===== IN-APP TOAST NOTIFICATION ===== -->
+    {% set status_lower = absensi.status | lower %}
+    {% if 'hadir' in status_lower %}
+        {% set toast_emoji = '✅' %}
+        {% set toast_class = 'hadir' %}
+        {% set toast_title = 'Presensi Masuk Berhasil — Hadir' %}
+    {% elif 'terlambat' in status_lower %}
+        {% set toast_emoji = '⚠️' %}
+        {% set toast_class = 'terlambat' %}
+        {% set toast_title = 'Presensi Masuk Berhasil — Terlambat' %}
+    {% elif 'sakit' in status_lower %}
+        {% set toast_emoji = '🏥' %}
+        {% set toast_class = 'sakit' %}
+        {% set toast_title = 'Presensi Berhasil — Sakit' %}
+    {% elif 'ijin' in status_lower or 'izin' in status_lower %}
+        {% set toast_emoji = '📋' %}
+        {% set toast_class = 'ijin' %}
+        {% set toast_title = 'Presensi Berhasil — Izin' %}
+    {% else %}
+        {% set toast_emoji = '✅' %}
+        {% set toast_class = 'hadir' %}
+        {% set toast_title = 'Presensi Berhasil' %}
+    {% endif %}
+
+    <div id="toast-notif" role="alert" aria-live="polite">
+        <div class="toast-icon {{ toast_class }}">{{ toast_emoji }}</div>
+        <div style="flex:1;min-width:0">
+            <div class="toast-title">{{ toast_title }}</div>
+            <div class="toast-body">
+                {{ absensi.anggota.nama }},
+                tercatat pukul <strong style="color:#67e8f9">
+                    {{ absensi.waktu_masuk.strftime('%H:%M') if absensi.waktu_masuk else absensi.waktu_pulang.strftime('%H:%M') }} WITA
+                </strong>
+            </div>
+        </div>
+        <button class="toast-close" onclick="dismissToast()" aria-label="Tutup">✕</button>
+        <div class="toast-progress" id="toast-progress"></div>
+    </div>
+    <!-- ======================================= -->
+
+    <div class="max-w-md w-full space-y-6 glass p-8 rounded-3xl shadow-[0_0_50px_rgba(0,153,255,0.2)] mt-8 mb-8 relative">
+        
+        <!-- Header -->
+        <div class="text-center pb-6 border-b border-white/10 relative">
+            <a href="/absensi/" class="absolute left-0 top-2 w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-house text-cyan-400"></i>
+            </a>
+            <div class="inline-flex items-center justify-center w-20 h-20 mb-3">
+                <img src="/static/logo-polri.png" alt="Logo Polri" class="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(0,153,255,0.4)]">
+            </div>
+            <h1 class="text-xl font-black text-cyan-400 tracking-tight uppercase">BUKTI PRESENSI</h1>
+            <p class="text-[10px] text-gray-400 font-bold tracking-widest uppercase">Selesai Direkam</p>
+        </div>
+
+        <!-- Contents -->
+        <div class="space-y-2">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <div class="app-text-label">Tanggal</div>
+                    <div class="app-text-value text-cyan-400">{{ absensi.tanggal.strftime("%d %b %Y") }}</div>
+                </div>
+                <div>
+                    <div class="app-text-label">Jam Presensi</div>
+                    <div class="app-text-value text-cyan-400">
+                        {{ absensi.waktu_masuk.strftime("%H:%M:%S") if absensi.waktu_masuk else '-' }}
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="app-text-label"><i class="fa-solid fa-user text-cyan-500 mr-1.5"></i> Identitas Pegawai</div>
+                <div class="app-text-value">{{ absensi.anggota.nama }} <span class="text-xs text-gray-500 font-mono block mt-1">NRP. {{ absensi.anggota.NRP or '-' }}</span></div>
+            </div>
+
+            <div>
+                <div class="app-text-label"><i class="fa-solid fa-clipboard-check text-cyan-500 mr-1.5"></i> Status Absensi</div>
+                <div class="app-text-value uppercase text-white bg-cyan-600/20 px-4 py-2 border border-cyan-500/30 rounded-xl inline-block mt-1">
+                    {{ absensi.status }} 
+                    {% if absensi.keterangan %}
+                        <span class="text-xs text-gray-400 italic font-mono block mt-1 lowercase text-transform:none;">({{ absensi.keterangan }})</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if absensi.foto %}
+            <div class="pt-2">
+                {% if 'data:image' in absensi.foto[:30] %}
+                <div class="app-text-label"><i class="fa-solid fa-camera text-cyan-500 mr-1.5"></i> Foto Selfie / Bukti</div>
+                {% else %}
+                <div class="app-text-label"><i class="fa-solid fa-file-pdf text-cyan-500 mr-1.5"></i> Dokumen Lampiran</div>
+                {% endif %}
+                <div class="mt-2 rounded-2xl overflow-hidden border-2 border-cyan-500/30 bg-black aspect-square flex items-center justify-center relative group">
+                    {% if 'data:image' in absensi.foto[:30] %}
+                    <img src="{{ absensi.foto }}" alt="Lampiran" class="w-full h-full object-cover">
+                    {% elif 'application/pdf' in absensi.foto[:50] %}
+                    <iframe src="{{ absensi.foto }}" class="w-full h-full border-0 bg-white"></iframe>
+                    {% else %}
+                    <iframe src="{{ absensi.foto }}" class="w-full h-full border-0 bg-white"></iframe>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        <a href="{{ absensi.foto }}" download="Lampiran_Presensi" class="flex flex-col items-center text-center px-4 hover:text-cyan-300">
+                            <i class="fa-solid fa-file-arrow-down text-4xl mb-2"></i>
+                            <span class="text-[10px] font-black uppercase tracking-widest">Unduh Dokumen<br>(Bila preview kosong)</span>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if absensi.tanda_tangan %}
+            <div class="pt-4">
+                <div class="app-text-label"><i class="fa-solid fa-pen-nib text-cyan-500 mr-1.5"></i> Tanda Tangan</div>
+                <div class="mt-2 rounded-2xl overflow-hidden bg-white border-2 border-dashed border-gray-600 p-2">
+                    <img src="{{ absensi.tanda_tangan }}" alt="Tanda Tangan" class="w-full h-auto mix-blend-multiply">
+                </div>
+            </div>
+            {% endif %}
+
+            {% if absensi.latitude and absensi.longitude %}
+            <div class="pt-4">
+                <div class="app-text-label"><i class="fa-solid fa-location-dot text-cyan-500 mr-1.5"></i> Lokasi GPS Server</div>
+                <div class="mt-2 h-40 w-full rounded-2xl overflow-hidden border-2 border-[#1f4068] relative z-0">
+                    <div id="map" class="w-full h-full"></div>
+                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var lat = parseFloat("{{ absensi.latitude }}");
+                        var lon = parseFloat("{{ absensi.longitude }}");
+                        var map = L.map('map', {zoomControl: false}).setView([lat, lon], 16);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                        L.marker([lat, lon]).addTo(map);
+                    });
+                </script>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="pt-6 border-t border-[#1f4068] pb-2">
+           <a href="/absensi/" class="block w-full text-center py-4 bg-cyan-600 hover:bg-cyan-500 text-gray-900 border border-cyan-400 font-black rounded-2xl transition-all uppercase tracking-[0.1em] text-xs shadow-[0_0_20px_rgba(0,255,255,0.3)]">
+               <i class="fa-solid fa-check-circle mr-2"></i> SELESAI
+           </a>
+        </div>
+    </div>
+
+    <script>
+        // === TOAST AUTO-SHOW & DISMISS ===
+        var toastTimer;
+        function showToast() {
+            var t = document.getElementById('toast-notif');
+            // Tampilkan setelah halaman load
+            setTimeout(function() {
+                t.classList.add('show');
+            }, 300);
+            // Auto-dismiss setelah 4.5 detik
+            toastTimer = setTimeout(function() {
+                dismissToast();
+            }, 4500);
+        }
+        function dismissToast() {
+            clearTimeout(toastTimer);
+            var t = document.getElementById('toast-notif');
+            t.classList.remove('show');
+            t.classList.add('hide');
+        }
+        window.addEventListener('load', showToast);
+    </script>
+</body>
+</html>
