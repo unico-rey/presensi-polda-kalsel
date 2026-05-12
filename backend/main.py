@@ -31,6 +31,12 @@ app = FastAPI(
 @app.on_event("startup")
 async def startup_event():
     start_scheduler()
+    # Otomatis isi data master (Admin, Pangkat, Jabatan) saat startup jika kosong
+    from seed_master import seed_data
+    try:
+        seed_data()
+    except Exception as e:
+        print(f"Seeding failed: {e}")
 
 # ===============================
 # CREATE TABLES (AUTO)
