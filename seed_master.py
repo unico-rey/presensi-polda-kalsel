@@ -50,16 +50,21 @@ def seed_data():
         if not exists:
             db.add(Jabatan(nama=j_name))
             
-    print("Menambahkan Admin Default...")
-    exists_admin = db.query(Admin).first()
-    if not exists_admin:
-        db.add(Admin(
+    print("Menambahkan/Update Admin Default...")
+    admin = db.query(Admin).first()
+    if not admin:
+        admin = Admin(
             id_admin=str(uuid.uuid4())[:8],
             nama="Administrator",
             email="admin",
             password="1234"
-        ))
+        )
+        db.add(admin)
         print("Admin default (admin/1234) berhasil ditambahkan.")
+    else:
+        admin.email = "admin"
+        admin.password = "1234"
+        print("Admin default berhasil diperbarui menjadi admin/1234.")
 
     try:
         db.commit()

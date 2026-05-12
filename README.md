@@ -3,106 +3,113 @@
 
   # 🚔 Sistem Presensi Polda Kalsel
   
-  **Aplikasi Presensi Cerdas dengan Geofencing & Real-Time Notifikasi**
+  **Aplikasi Manajemen Kehadiran Cerdas dengan Geofencing & Real-Time Monitoring**
 
-  [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
-  [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
+  [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+  [![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
   [![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org)
-  [![Bootstrap](https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
+  [![UI/UX](https://img.shields.io/badge/UI/UX-Modern_Glassmorphism-FF69B4?style=for-the-badge)](https://github.com/unico-rey/presensi-polda-kalsel)
 </div>
 
 <br />
 
 ## 📖 Tentang Proyek
-**Sistem Presensi Polda Kalsel** adalah aplikasi absensi modern yang dibangun khusus untuk memudahkan monitoring data presensi anggota Kepolisian Daerah Kalimantan Selatan. Aplikasi ini memanfaatkan teknologi Geofencing untuk validasi lokasi absen dan sistem Push Notification (VAPID) untuk notifikasi realtime.
+**Sistem Presensi Polda Kalsel** adalah solusi digital modern yang dirancang khusus untuk mengelola dan memantau kehadiran anggota Kepolisian Daerah Kalimantan Selatan secara akurat dan transparan. 
 
-Dilengkapi dengan Dashboard Admin yang intuitif untuk manajemen data anggota, pemantauan kehadiran, dan pengaturan radius absensi.
+Dengan fokus pada keamanan dan kemudahan penggunaan, sistem ini mengintegrasikan validasi lokasi berbasis **Geofencing** dan sistem **Push Notification** otomatis untuk memberikan pengalaman presensi yang handal baik bagi anggota maupun administrator.
 
-## ✨ Fitur Utama
-- 📍 **Geofencing Location:** Validasi jarak absensi berdasarkan titik koordinat yang ditentukan (Haversine formula).
-- 🔔 **Push Notifications:** Pemberitahuan real-time langsung ke perangkat saat ada yang melakukan absensi.
-- 📱 **Responsive Design:** Tampilan antarmuka yang optimal diakses dari smartphone maupun desktop.
-- 👥 **Manajemen Anggota:** Fitur lengkap (CRUD) untuk mengelola data personel.
-- 📊 **Dashboard Monitoring:** Ringkasan statistik kehadiran harian secara visual.
-- 📥 **Export/Import Data:** Dukungan pengolahan data anggota melalui file CSV/Excel.
-- 🚀 **Performa Cepat:** Backend dibangun menggunakan FastAPI untuk respons yang asinkron dan sangat cepat.
+## ✨ Fitur Unggulan
 
-## 🛠️ Teknologi yang Digunakan
-* **Backend:** Python, FastAPI, Uvicorn
-* **Database:** SQLite (SQLAlchemy ORM)
-* **Frontend:** HTML5, CSS3, JavaScript (Vanilla), Jinja2 Templates, Bootstrap
-* **Lainnya:** Vapid (Web Push), Geolocation API
+- 📍 **Smart Geofencing:** Validasi lokasi presensi menggunakan formula *Haversine* tingkat tinggi untuk memastikan anggota berada dalam radius yang ditentukan dari kantor.
+- 🔔 **Real-Time Push Notifications:** Notifikasi otomatis langsung ke perangkat anggota melalui standar VAPID setelah presensi berhasil dilakukan (Masuk/Pulang).
+- 📊 **Dynamic Live Dashboard:** Pemantauan aktivitas presensi secara *real-time* dengan sistem auto-refresh data setiap 30 detik.
+- 📈 **Chronological Event Stream:** Pencatatan kehadiran berbasis alur kronologis yang memudahkan pelacakan aktivitas harian anggota secara berurutan.
+- 💎 **Premium UI/UX:** Antarmuka modern dengan estetika *Glassmorphism*, transisi halus, dan sistem modal detail yang informatif.
+- 👥 **Advanced Management:** Manajemen data anggota lengkap (CRUD) dengan fitur import/export file CSV/Excel untuk efisiensi data.
+- ⚙️ **Admin Control:** Panel pengaturan terpusat untuk mengontrol status Geofencing, radius lokasi, dan jadwal jam kerja.
+
+## 🛠️ Arsitektur Teknologi
+
+### Backend (The Engine)
+- **FastAPI:** Framework Python asinkron berperforma tinggi untuk API yang responsif.
+- **SQLAlchemy:** ORM modern untuk manajemen database yang aman dan terstruktur.
+- **Uvicorn:** ASGI server untuk skalabilitas tinggi.
+
+### Frontend (The Interface)
+- **Vanilla JavaScript:** Logika frontend yang ringan dan cepat tanpa overhead framework besar.
+- **Jinja2 Templates:** Rendering sisi server yang dinamis dan efisien.
+- **Modern CSS:** Desain responsif dengan kombinasi utilitas modern untuk visual premium.
+- **Leaflet.js:** Integrasi peta interaktif untuk pemetaan lokasi presensi anggota.
 
 ---
 
-## 💻 Cara Instalasi & Menjalankan
-
-Ikuti langkah-langkah berikut untuk menjalankan project ini di komputer lokal Anda.
+## 💻 Panduan Instalasi
 
 ### Prasyarat
-- Python 3.9 atau lebih baru
-- Git
+- Python 3.9 atau versi terbaru
+- Git installed (opsional)
 
-### Langkah Instalasi
+### Cara Menjalankan (Rekomendasi)
 
-1. **Clone Repository**
-   ```bash
-   git clone https://github.com/unico-rey/presensi-polda-kalsel.git
-   cd presensi-polda-kalsel
-   ```
+Cukup gunakan file executable yang telah disediakan untuk setup otomatis:
 
-2. **Jalankan Aplikasi (Windows)**
-   Cukup klik ganda atau jalankan file batch yang telah disediakan:
-   ```bash
-   run.bat
-   ```
-   *Script ini secara otomatis akan:*
-   - Mengaktifkan/membuat Virtual Environment.
-   - Melakukan pengecekan dan migrasi Database.
-   - Membuka browser ke halaman aplikasi.
-   - Menjalankan server Uvicorn.
+1. **Clone/Download** repository ini.
+2. Jalankan file **`run.bat`** (Windows).
+3. Script akan otomatis:
+   - Membuat Virtual Environment (`venv`).
+   - Menginstal semua dependensi dari `requirements.txt`.
+   - Menginisialisasi dan memigrasi Database.
+   - Menjalankan server dan membuka browser secara otomatis.
 
-   *Alternatif Manual (jika tanpa `run.bat`):*
-   ```bash
-   python -m venv venv
-   venv\Scripts\activate
-   pip install -r requirements.txt
-   python check_db.py
-   python migrate_db.py
-   python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
-   ```
+### Jalur Manual
+```bash
+# Aktifkan virtual environment
+python -m venv venv
+venv\Scripts\activate
 
-3. **Akses Aplikasi**
-   - Halaman Presensi: `http://127.0.0.1:8000/absensi/`
-   - Halaman Admin Dashboard: `http://127.0.0.1:8000/admin/`
+# Instal dependensi
+pip install -r requirements.txt
 
-## 🔐 Akun Default Admin
-Untuk login ke halaman admin, gunakan kredensial berikut:
+# Inisialisasi Database
+python check_db.py
+python migrate_db.py
+
+# Jalankan Server
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+---
+
+## 🔐 Akses Administrator
+Gunakan akun default berikut untuk mengelola sistem:
+- **Halaman Admin:** `http://127.0.0.1:8000/admin/`
 - **Username:** `admin`
 - **Password:** `1234`
 
-## 📸 Tampilan Layar (Screenshots)
+## 📸 Dokumentasi Antarmuka
 
 <div align="center">
   <table style="width:100%">
     <tr>
-      <td align="center"><strong>Halaman Presensi (Geofencing)</strong></td>
-      <td align="center"><strong>Admin Dashboard</strong></td>
+      <td align="center" width="50%"><strong>Antarmuka Presensi (Mobile Ready)</strong></td>
+      <td align="center" width="50%"><strong>Dashboard Monitoring Admin</strong></td>
     </tr>
     <tr>
       <td align="center">
-        <!-- Placeholder untuk Screenshot Absensi -->
-        <img src="https://via.placeholder.com/400x250/f0f2f5/005571?text=Halaman+Absensi" alt="Halaman Absensi">
+        <img src="https://via.placeholder.com/400x250/0a192f/ffffff?text=Antarmuka+Presensi+Anggota" alt="Antarmuka Presensi">
+        <br/><i>Validasi Geofencing & Foto Selfie</i>
       </td>
       <td align="center">
-        <!-- Placeholder untuk Screenshot Admin -->
-        <img src="https://via.placeholder.com/400x250/f0f2f5/005571?text=Dashboard+Admin" alt="Dashboard Admin">
+        <img src="https://via.placeholder.com/400x250/0a192f/ffffff?text=Dashboard+Live+Monitoring" alt="Dashboard Admin">
+        <br/><i>Statistik & Alur Kronologis Real-time</i>
       </td>
     </tr>
   </table>
 </div>
 
 ---
+
 <div align="center">
-  <i>Dibuat untuk mempermudah sistem manajemen absensi Polda Kalsel.</i>
+  <p><i>Dikembangkan dengan ❤️ untuk kemajuan institusi Polda Kalsel.</i></p>
+  <sub>© 2026 Presensi Polda Kalsel - Modern Attendance Solution</sub>
 </div>
