@@ -78,6 +78,8 @@ async def absensi_submit(request: Request, db: Session = Depends(get_db)):
         rekam.waktu_pulang = now
         rekam.foto_pulang = foto
         rekam.tanda_tangan_pulang = tanda_tangan
+        rekam.latitude_pulang = lat
+        rekam.longitude_pulang = lon
         if tipe_absen == "pulang_siang":
              rekam.keterangan = "Pulang Siang"
         db.commit()

@@ -70,8 +70,8 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
                 "tanggal": a.tanggal.strftime("%d-%m-%Y"),
                 "foto": a.foto_pulang,
                 "tanda_tangan": a.tanda_tangan_pulang,
-                "latitude": a.latitude,
-                "longitude": a.longitude,
+                "latitude": a.latitude_pulang,
+                "longitude": a.longitude_pulang,
                 "nama": name,
                 "id_anggota": a.id_anggota,
                 "status": "Pulang",
@@ -567,8 +567,8 @@ def admin_absensi_list(request: Request, start_date: str = None, end_date: str =
                 "no_wa": no_wa,
                 "foto": a.foto_pulang,
                 "tanda_tangan": a.tanda_tangan_pulang,
-                "latitude": a.latitude,
-                "longitude": a.longitude,
+                "latitude": a.latitude_pulang,
+                "longitude": a.longitude_pulang,
                 "status": "Pulang",
                 "keterangan": a.keterangan
             })

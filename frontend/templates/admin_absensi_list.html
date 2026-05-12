@@ -110,18 +110,14 @@
                                 {% endif %}
                             </td>
                             <td class="px-4 py-3 border-r border-gray-800/50 whitespace-nowrap text-center">
-                                {% if ev.tipe == 'pulang' %}
-                                <span class="text-[8px] text-gray-500 italic uppercase">Sesuai Masuk</span>
-                                {% else %}
-                                    {% if ev.latitude and ev.longitude %}
-                                    <a href="https://www.google.com/maps?q={{ ev.latitude }},{{ ev.longitude }}" target="_blank" class="flex flex-col gap-0.5 font-mono text-cyan-400 hover:text-cyan-300 transition-colors" title="Buka di Google Maps">
-                                        <span class="font-bold text-[9px]">{{ ev.latitude[:8] }}</span>
-                                        <span class="text-[8px]">{{ ev.longitude[:8] }}</span>
-                                    </a>
-                                    {% else %}
-                                    <span class="text-[8px] text-gray-700 italic uppercase">N/A</span>
-                                    {% endif %}
-                                {% endif %}
+                                 {% if ev.latitude and ev.longitude %}
+                                 <a href="https://www.google.com/maps?q={{ ev.latitude }},{{ ev.longitude }}" target="_blank" class="flex flex-col gap-0.5 font-mono text-cyan-400 hover:text-cyan-300 transition-colors" title="Buka di Google Maps">
+                                     <span class="font-bold text-[9px]">{{ ev.latitude[:8] }}</span>
+                                     <span class="text-[8px]">{{ ev.longitude[:8] }}</span>
+                                 </a>
+                                 {% else %}
+                                 <span class="text-[8px] text-gray-700 italic uppercase">N/A</span>
+                                 {% endif %}
                             </td>
                             <td class="px-4 py-3 text-center">
                                 {% if ev.tipe == 'pulang' %}

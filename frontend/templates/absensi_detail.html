@@ -244,11 +244,19 @@
                 </div>
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
-                        var lat = parseFloat("{{ absensi.latitude }}");
-                        var lon = parseFloat("{{ absensi.longitude }}");
-                        var map = L.map('map', {zoomControl: false}).setView([lat, lon], 16);
-                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-                        L.marker([lat, lon]).addTo(map);
+                        {% if tipe == 'pulang' %}
+                            var lat = parseFloat("{{ absensi.latitude_pulang or absensi.latitude }}");
+                            var lon = parseFloat("{{ absensi.longitude_pulang or absensi.longitude }}");
+                        {% else %}
+                            var lat = parseFloat("{{ absensi.latitude }}");
+                            var lon = parseFloat("{{ absensi.longitude }}");
+                        {% endif %}
+                        
+                        if (lat && lon) {
+                            var map = L.map('map', {zoomControl: false}).setView([lat, lon], 16);
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                            L.marker([lat, lon]).addTo(map);
+                        }
                     });
                 </script>
             </div>

@@ -38,7 +38,9 @@ def migrate():
             ("foto_pulang", "LONGTEXT NULL"),
             ("tanda_tangan_pulang", "LONGTEXT NULL"),
             ("latitude", "VARCHAR(50) NULL"),
-            ("longitude", "VARCHAR(50) NULL")
+            ("longitude", "VARCHAR(50) NULL"),
+            ("latitude_pulang", "VARCHAR(50) NULL"),
+            ("longitude_pulang", "VARCHAR(50) NULL")
         ]
         
         # Refresh existing columns list
