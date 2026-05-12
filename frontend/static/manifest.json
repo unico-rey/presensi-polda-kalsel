@@ -1,0 +1,23 @@
+{
+  "name": "Presensi Polda Kalsel",
+  "short_name": "PresensiPol",
+  "description": "Sistem Presensi Anggota Polda Kalimantan Selatan",
+  "start_url": "/absensi/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "icons": [
+    {
+      "src": "/static/logo-polri.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/logo-polri.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

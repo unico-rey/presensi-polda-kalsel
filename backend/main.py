@@ -55,6 +55,11 @@ async def service_worker():
         headers={"Service-Worker-Allowed": "/"}
     )
 
+@app.get("/manifest.json", include_in_schema=False)
+async def manifest():
+    manifest_path = os.path.join(parent_dir, "frontend", "static", "manifest.json")
+    return FileResponse(manifest_path, media_type="application/json")
+
 # ===============================
 # STATIC FILES
 # ===============================
