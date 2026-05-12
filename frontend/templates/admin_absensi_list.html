@@ -7,7 +7,7 @@
 <div class="space-y-8">
     <!-- Filters & Actions -->
     <!-- Filters & Actions -->
-    <div class="flex flex-col lg:flex-row gap-6 items-stretch lg:items-end justify-between no-print bg-gray-900/40 p-6 lg:p-8 rounded-[2rem] border border-[#1f4068]">
+    <div class="flex flex-col lg:flex-row gap-4 lg:gap-6 items-stretch lg:items-end justify-between no-print bg-gray-900/40 p-4 lg:p-8 rounded-[1.5rem] lg:rounded-[2rem] border border-[#1f4068]">
         <form action="/admin/absensi" method="GET" class="flex flex-col md:flex-row flex-wrap gap-4 lg:gap-6 items-stretch md:items-end">
             <div class="space-y-2">
                 <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Rentang Tanggal</label>
@@ -57,8 +57,8 @@
         </div>
 
         <form id="bulkDeleteForm" action="/admin/absensi/bulk-delete" method="POST">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full min-w-[800px] text-left border-collapse">
                     <thead class="bg-gray-900/90 text-gray-500 text-[9px] uppercase font-black tracking-widest">
                         <tr class="border-b border-gray-800">
                             <th class="px-4 py-4 border-r border-gray-800/50">Tanggal</th>
