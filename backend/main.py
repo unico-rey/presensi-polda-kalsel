@@ -52,7 +52,8 @@ async def service_worker():
 # ===============================
 # STATIC FILES
 # ===============================
-app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+static_path = os.path.join(parent_dir, "frontend", "static")
+app.mount("/static", StaticFiles(directory=static_path), name="static")
 
 # ===============================
 # REGISTER ROUTERS
