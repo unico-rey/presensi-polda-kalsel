@@ -135,12 +135,22 @@
                                             <i class="fa-solid fa-clock"></i> Masuk: Terlambat
                                         </div>
                                     {% elif lower_status in ['izin', 'ijin'] %}
-                                        <div class="inline-flex items-center justify-center gap-1.5 px-3 py-1 bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 rounded-lg text-[9px] font-black uppercase tracking-wider">
-                                            <i class="fa-solid fa-envelope"></i> Izin
+                                        <div class="flex flex-col items-center gap-1">
+                                            <div class="inline-flex items-center justify-center gap-1.5 px-3 py-1 bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 rounded-lg text-[9px] font-black uppercase tracking-wider">
+                                                <i class="fa-solid fa-envelope"></i> Izin
+                                            </div>
+                                            {% if ev.keterangan %}
+                                            <span class="text-[8px] text-gray-500 italic font-bold text-center leading-tight">{{ ev.keterangan }}</span>
+                                            {% endif %}
                                         </div>
                                     {% else %}
-                                        <div class="inline-flex items-center justify-center gap-1.5 px-3 py-1 bg-rose-500/20 border border-rose-500/30 text-rose-400 rounded-lg text-[9px] font-black uppercase tracking-wider">
-                                            <i class="fa-solid fa-notes-medical"></i> {{ ev.status }}
+                                        <div class="flex flex-col items-center gap-1">
+                                            <div class="inline-flex items-center justify-center gap-1.5 px-3 py-1 bg-rose-500/20 border border-rose-500/30 text-rose-400 rounded-lg text-[9px] font-black uppercase tracking-wider">
+                                                <i class="fa-solid fa-notes-medical"></i> {{ ev.status }}
+                                            </div>
+                                            {% if ev.keterangan %}
+                                            <span class="text-[8px] text-gray-500 italic font-bold text-center leading-tight">{{ ev.keterangan }}</span>
+                                            {% endif %}
                                         </div>
                                     {% endif %}
                                 {% endif %}
