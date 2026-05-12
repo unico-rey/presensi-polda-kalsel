@@ -1,5 +1,3 @@
-<div align="center">
-  <img src="https://raw.githubusercontent.com/unico-rey/presensi-polda-kalsel/master/frontend/static/assets/img/logo-polda.png" alt="Logo Polda Kalsel" width="120" onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/4/46/Logo_Polri.png'">
 
   # 🚔 Sistem Presensi Polda Kalsel
   
@@ -85,29 +83,6 @@ Gunakan akun default berikut untuk mengelola sistem:
 - **Halaman Admin:** `http://127.0.0.1:8000/admin/`
 - **Username:** `admin`
 - **Password:** `1234`
-
-## 📸 Dokumentasi Antarmuka
-
-<div align="center">
-  <table style="width:100%">
-    <tr>
-      <td align="center" width="50%"><strong>Antarmuka Presensi (Mobile Ready)</strong></td>
-      <td align="center" width="50%"><strong>Dashboard Monitoring Admin</strong></td>
-    </tr>
-    <tr>
-      <td align="center">
-        <img src="https://via.placeholder.com/400x250/0a192f/ffffff?text=Antarmuka+Presensi+Anggota" alt="Antarmuka Presensi">
-        <br/><i>Validasi Geofencing & Foto Selfie</i>
-      </td>
-      <td align="center">
-        <img src="https://via.placeholder.com/400x250/0a192f/ffffff?text=Dashboard+Live+Monitoring" alt="Dashboard Admin">
-        <br/><i>Statistik & Alur Kronologis Real-time</i>
-      </td>
-    </tr>
-  </table>
-</div>
-
----
 
 <div align="center">
   <p><i>Dikembangkan dengan ❤️ untuk kemajuan institusi Polda Kalsel.</i></p>
