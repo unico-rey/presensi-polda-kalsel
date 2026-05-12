@@ -84,10 +84,6 @@ Gunakan akun default berikut untuk mengelola sistem:
 - **Username:** `admin`
 - **Password:** `1234`
 
-## 📸 Dokumentasi Antarmuka
-
----
-
 <div align="center">
   <p><i>Dikembangkan dengan ❤️ untuk kemajuan institusi Polda Kalsel.</i></p>
   <sub>© 2026 Presensi Polda Kalsel - Modern Attendance Solution</sub>
