@@ -24,8 +24,13 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     if not check_admin(request, db): return RedirectResponse("/auth/login")
     
     today = datetime.now(pytz.timezone('Asia/Makassar')).date()
-    # counts
-    absensi_today = db.query(Absensi).filter(func.date(Absensi.tanggal) == today).all()
+    # Subquery id_anggota yang masih terdaftar
+    valid_ids = db.query(Anggota.id_anggota).subquery()
+    # counts - hanya dari anggota yang masih terdaftar
+    absensi_today = db.query(Absensi).filter(
+        func.date(Absensi.tanggal) == today,
+        Absensi.id_anggota.in_(valid_ids)
+    ).all()
     hadir = sum(1 for a in absensi_today if a.status.lower() == 'hadir')
     terlambat = sum(1 for a in absensi_today if a.status.lower() == 'terlambat')
     sakit = sum(1 for a in absensi_today if a.status.lower() == 'sakit')
@@ -173,11 +178,14 @@ async def admin_hapus_anggota(request: Request, db: Session = Depends(get_db)):
     
     ag = db.query(Anggota).filter(Anggota.id_anggota == id_ag).first()
     if ag:
-        # Also delete absensi tied to thisanggota to maintain DB integrity if desired. 
-        # But for now just deleting theanggota.
+        # Hapus semua data terkait terlebih dahulu
+        from backend.models.models import Cuti, PushSubscription
+        db.query(Absensi).filter(Absensi.id_anggota == id_ag).delete(synchronize_session=False)
+        db.query(Cuti).filter(Cuti.id_anggota == id_ag).delete(synchronize_session=False)
+        db.query(PushSubscription).filter(PushSubscription.id_anggota == id_ag).delete(synchronize_session=False)
         db.delete(ag)
         db.commit()
-    return RedirectResponse("/admin/anggota?msg=Anggota_berhasil_dihapus", status_code=302)
+    return RedirectResponse("/admin/anggota?msg=Anggota_dan_semua_data_terkait_berhasil_dihapus", status_code=302)
 
 @router.get("/anggota/download-template")
 def download_template(request: Request, db: Session = Depends(get_db)):
