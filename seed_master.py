@@ -7,7 +7,7 @@ if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 
 from backend.db.database import SessionLocal, engine
-from backend.models.models import Base, Jabatan, Pangkat, Admin
+from backend.models.models import Base, Jabatan, Pangkat, Admin, Anggota
 import uuid
 
 def seed_data():
@@ -66,6 +66,28 @@ def seed_data():
         admin.password = "1234"
         print("Admin default berhasil diperbarui menjadi admin/1234.")
 
+    # Add sample Anggota entries (5 contoh)
+    sample_anggota = [
+        {"nama": "Budi Santoso", "email": "budi@example.com", "password": "budi123", "jabatan": "Kapolsek", "pangkat": "Kompol", "NRP": 123456, "no_wa": "081234567890"},
+        {"nama": "Siti Aminah", "email": "siti@example.com", "password": "siti123", "jabatan": "Kapolres", "pangkat": "Irjen Pol", "NRP": 234567, "no_wa": "081234567891"},
+        {"nama": "Agus Prasetyo", "email": "agus@example.com", "password": "agus123", "jabatan": "Waka Polres", "pangkat": "Brigjen Pol", "NRP": 345678, "no_wa": "081234567892"},
+        {"nama": "Dewi Lestari", "email": "dewi@example.com", "password": "dewi123", "jabatan": "Kabid Humas", "pangkat": "AKBP", "NRP": 456789, "no_wa": "081234567893"},
+        {"nama": "Rudi Hartono", "email": "rudi@example.com", "password": "rudi123", "jabatan": "Staf / Admin", "pangkat": "Aipda", "NRP": 567890, "no_wa": "081234567894"},
+    ]
+    for ag_data in sample_anggota:
+        exists = db.query(Anggota).filter(Anggota.email == ag_data["email"]).first()
+        if not exists:
+            ag = Anggota(
+                id_anggota=str(uuid.uuid4())[:8],
+                nama=ag_data["nama"],
+                email=ag_data["email"],
+                password=ag_data["password"],
+                jabatan=ag_data["jabatan"],
+                pangkat=ag_data["pangkat"],
+                NRP=ag_data["NRP"],
+                no_wa=ag_data["no_wa"],
+            )
+            db.add(ag)
     try:
         db.commit()
         print("Selesai! Berhasil menambahkan semua data master Pangkat dan Jabatan.")

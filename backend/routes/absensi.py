@@ -4,6 +4,8 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import datetime
+from backend.utils.timezone import now_wita as dt
+from backend.utils.timezone import now_wita
 
 from backend.db.database import get_db
 from backend.models.models import Absensi, Anggota, Pengaturan, Admin
@@ -67,8 +69,8 @@ async def absensi_submit(request: Request, db: Session = Depends(get_db)):
             return RedirectResponse("/absensi/?error=Gagal_memverifikasi_lokasi_GPS._Pastikan_GPS_menyala", status_code=302)
     # --------------------------------------
 
-    now = datetime.now()
-    today = now.date()
+    now = now_wita()
+    today = now_wita().date()
     
     rekam = db.query(Absensi).filter(Absensi.id_anggota == id_anggota, func.date(Absensi.tanggal) == today).first()
     
