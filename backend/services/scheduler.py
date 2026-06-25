@@ -2,6 +2,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from sqlalchemy import func
 from datetime import datetime, timedelta
+import pytz
 import logging
 import json
 
@@ -71,7 +72,7 @@ def check_masuk_reminder():
     """Cek dan kirim notifikasi sebelum JAM MASUK."""
     db = SessionLocal()
     try:
-        now = datetime.now()
+        now = datetime.now(pytz.timezone('Asia/Makassar'))
         hari_ini = now.weekday()
 
         # Skip weekend (Sabtu=5, Minggu=6)
@@ -140,7 +141,7 @@ def check_pulang_reminder():
     """Cek dan kirim notifikasi sebelum JAM PULANG."""
     db = SessionLocal()
     try:
-        now = datetime.now()
+        now = datetime.now(pytz.timezone('Asia/Makassar'))
         hari_ini = now.weekday()
 
         # Skip weekend

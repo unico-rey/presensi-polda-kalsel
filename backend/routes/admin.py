@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc, asc, func
 import uuid
 from datetime import datetime
+import pytz
 import json
 
 from backend.db.database import get_db
@@ -22,7 +23,7 @@ def check_admin(request: Request, db: Session):
 def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     if not check_admin(request, db): return RedirectResponse("/auth/login")
     
-    today = datetime.now().date()
+    today = datetime.now(pytz.timezone('Asia/Makassar')).date()
     # counts
     absensi_today = db.query(Absensi).filter(func.date(Absensi.tanggal) == today).all()
     hadir = sum(1 for a in absensi_today if a.status.lower() == 'hadir')
