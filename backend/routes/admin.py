@@ -136,11 +136,19 @@ async def admin_tambah_anggota(request: Request, db: Session = Depends(get_db)):
     if not check_admin(request, db): return RedirectResponse("/auth/login")
     form = await request.form()
     
+    email_val = form.get("email")
+    if not email_val:
+        return RedirectResponse("/admin/anggota?error=Email_wajib_diisi", status_code=302)
+        
+    existing = db.query(Anggota).filter(Anggota.email == email_val).first()
+    if existing:
+        return RedirectResponse("/admin/anggota?error=Email_sudah_terdaftar", status_code=302)
+        
     nrp_val = form.get("NRP")
     ag = Anggota(
         id_anggota=str(uuid.uuid4())[:8],
         nama=form.get("nama"),
-        email=form.get("email"),
+        email=email_val,
         password=form.get("password"),
         jabatan=form.get("jabatan"),
         pangkat=form.get("pangkat"),
@@ -148,8 +156,13 @@ async def admin_tambah_anggota(request: Request, db: Session = Depends(get_db)):
         no_wa=form.get("no_wa")
     )
     db.add(ag)
-    db.commit()
-    return RedirectResponse("/admin/anggota?msg=Anggota_berhasil_ditambahkan", status_code=302)
+    try:
+        db.commit()
+        return RedirectResponse("/admin/anggota?msg=Anggota_berhasil_ditambahkan", status_code=302)
+    except Exception as e:
+        db.rollback()
+        import urllib.parse
+        return RedirectResponse(f"/admin/anggota?error={urllib.parse.quote('Gagal menambah anggota: ' + str(e))}", status_code=302)
 
 @router.post("/anggota/hapus")
 async def admin_hapus_anggota(request: Request, db: Session = Depends(get_db)):
