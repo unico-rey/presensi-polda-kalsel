@@ -166,6 +166,20 @@ def absensi_detail_view(absensi_id: int, request: Request, tipe: str = None, db:
     anggota_data = db.query(Anggota).filter(Anggota.id_anggota == ag.id_anggota).first()
     ag.anggota = anggota_data
     
+    # Konversi waktu ke WITA (UTC+7) untuk ditampilkan di struk bukti
+    wita = pytz.timezone('Asia/Makassar')
+    if ag.waktu_masuk:
+        if ag.waktu_masuk.tzinfo is None:
+            ag.waktu_masuk = pytz.utc.localize(ag.waktu_masuk).astimezone(wita)
+        else:
+            ag.waktu_masuk = ag.waktu_masuk.astimezone(wita)
+            
+    if ag.waktu_pulang:
+        if ag.waktu_pulang.tzinfo is None:
+            ag.waktu_pulang = pytz.utc.localize(ag.waktu_pulang).astimezone(wita)
+        else:
+            ag.waktu_pulang = ag.waktu_pulang.astimezone(wita)
+    
     return templates.TemplateResponse("absensi_detail.html", {
         "request": request, 
         "absensi": ag,
