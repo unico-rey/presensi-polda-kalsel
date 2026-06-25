@@ -30,18 +30,24 @@ app = FastAPI(
 
 @app.on_event("startup")
 async def startup_event():
-    start_scheduler()
-    # Otomatis isi data master (Admin, Pangkat, Jabatan) saat startup jika kosong
-    from seed_master import seed_data
-    try:
-        seed_data()
-    except Exception as e:
-        print(f"Seeding failed: {e}")
+    # Di Vercel (serverless), kita tidak perlu menjalankan scheduler (karena background thread diblokir)
+    # dan database seeding (seharusnya dijalankan sekali saat setup/migration local)
+    if not os.getenv("VERCEL"):
+        start_scheduler()
+        # Otomatis isi data master (Admin, Pangkat, Jabatan) saat startup jika kosong
+        from seed_master import seed_data
+        try:
+            seed_data()
+        except Exception as e:
+            print(f"Seeding failed: {e}")
 
 # ===============================
 # CREATE TABLES (AUTO)
 # ===============================
-Base.metadata.create_all(bind=engine)
+# Di Vercel (serverless), kita tidak boleh menjalankan DDL / create_all pada top-level module
+# karena akan memicu koneksi database di fase import/build yang menyebabkan build error.
+if not os.getenv("VERCEL"):
+    Base.metadata.create_all(bind=engine)
 
 # ===============================
 # SERVICE WORKER (harus di root agar scope "/" bisa dikontrol)

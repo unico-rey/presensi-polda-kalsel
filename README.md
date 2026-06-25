@@ -41,7 +41,9 @@ Dengan fokus pada keamanan dan kemudahan penggunaan, sistem ini mengintegrasikan
 
 ---
 
-## 💻 Panduan Instalasi
+## 💻 Panduan Instalasi & Tutorial Lengkap
+
+Untuk panduan konfigurasi database, struktur proyek, troubleshooting, serta penjelasan fitur sistem secara mendalam, silakan baca **[TUTORIAL.md](file:///c:/project/kuliah/presensi%20polda%20kalsel/TUTORIAL.md)**.
 
 ### Prasyarat
 - Python 3.9 atau versi terbaru
