@@ -552,14 +552,21 @@ def admin_absensi_list(request: Request, start_date: str = None, end_date: str =
     offset = (page - 1) * per_page
     absensi_results = q.offset(offset).limit(per_page).all()
     
+    wita = pytz.timezone('Asia/Makassar')
     events = []
     for a, name, rank, no_wa in absensi_results:
         if a.waktu_masuk:
+            wm = a.waktu_masuk
+            if wm.tzinfo is None:
+                wm = pytz.utc.localize(wm).astimezone(wita)
+            else:
+                wm = wm.astimezone(wita)
+                
             events.append({
                 "tipe": "masuk",
-                "waktu": a.waktu_masuk,
-                "waktu_str": a.waktu_masuk.strftime("%H:%M:%S"),
-                "tanggal": a.tanggal.strftime("%d-%m-%Y"),
+                "waktu": wm,
+                "waktu_str": wm.strftime("%H:%M:%S"),
+                "tanggal": wm.strftime("%d-%m-%Y"),
                 "nama": name,
                 "rank": rank,
                 "no_wa": no_wa,
@@ -571,11 +578,17 @@ def admin_absensi_list(request: Request, start_date: str = None, end_date: str =
                 "keterangan": a.keterangan
             })
         if a.waktu_pulang:
+            wp = a.waktu_pulang
+            if wp.tzinfo is None:
+                wp = pytz.utc.localize(wp).astimezone(wita)
+            else:
+                wp = wp.astimezone(wita)
+                
             events.append({
                 "tipe": "pulang",
-                "waktu": a.waktu_pulang,
-                "waktu_str": a.waktu_pulang.strftime("%H:%M:%S"),
-                "tanggal": a.tanggal.strftime("%d-%m-%Y"),
+                "waktu": wp,
+                "waktu_str": wp.strftime("%H:%M:%S"),
+                "tanggal": wp.strftime("%d-%m-%Y"),
                 "nama": name,
                 "rank": rank,
                 "no_wa": no_wa,
