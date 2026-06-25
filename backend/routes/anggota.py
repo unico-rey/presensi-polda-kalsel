@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from backend.db.database import get_db
-from backend.models.models import Anggota
+from backend.models.models import Anggota, Absensi, Cuti, PushSubscription
 from backend.schemas.schemas import AnggotaCreate, AnggotaOut
 
 router = APIRouter(tags=["Anggota"])
@@ -157,9 +157,14 @@ def delete_anggota(id_anggota: str, db: Session = Depends(get_db)):
     if not ag:
         raise HTTPException(status_code=404, detail="Anggota tidak ditemukan")
 
+    # Hapus semua data terkait (cascade manual)
+    db.query(Absensi).filter(Absensi.id_anggota == id_anggota).delete(synchronize_session=False)
+    db.query(Cuti).filter(Cuti.id_anggota == id_anggota).delete(synchronize_session=False)
+    db.query(PushSubscription).filter(PushSubscription.id_anggota == id_anggota).delete(synchronize_session=False)
+
     db.delete(ag)
     db.commit()
-    return {"message": "Anggota berhasil dihapus"}
+    return {"message": "Anggota dan semua data terkait berhasil dihapus"}
 
 # ===============================
 # PUSH NOTIFICATION WEB PUSH
