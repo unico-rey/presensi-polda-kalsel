@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Request, Depends, Form, HTTPException, Cookie
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, asc, func
 import uuid
@@ -10,9 +9,9 @@ import json
 
 from backend.db.database import get_db
 from backend.models.models import Admin, Anggota, Absensi, Jabatan, Pangkat, Pengaturan, Cuti
+from backend.core.templates import templates
 
 router = APIRouter(tags=["Admin"])
-templates = Jinja2Templates(directory="frontend/templates")
 
 def check_admin(request: Request, db: Session):
     email = request.cookies.get("user_email")

@@ -1,4 +1,6 @@
+import os
 from fastapi.templating import Jinja2Templates
 
-# Memberitahu FastAPI di mana lokasi folder HTML berada
-templates = Jinja2Templates(directory="frontend/templates")
+# Path absolut agar bekerja di Vercel, cPanel, maupun lokal
+_BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+templates = Jinja2Templates(directory=os.path.join(_BASE_DIR, "frontend", "templates"))

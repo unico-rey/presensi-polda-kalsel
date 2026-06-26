@@ -1,14 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from backend.db.database import get_db
 from backend.models.models import Anggota, Absensi, Cuti, PushSubscription
 from backend.schemas.schemas import AnggotaCreate, AnggotaOut
+from backend.core.templates import templates
 
 router = APIRouter(tags=["Anggota"])
-
-templates = Jinja2Templates(directory="frontend/templates")
 
 
 # ==========================================================

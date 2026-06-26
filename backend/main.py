@@ -33,13 +33,18 @@ async def startup_event():
     # Di Vercel (serverless), kita tidak perlu menjalankan scheduler (karena background thread diblokir)
     # dan database seeding (seharusnya dijalankan sekali saat setup/migration local)
     if not os.getenv("VERCEL"):
-        start_scheduler()
-        # Otomatis isi data master (Admin, Pangkat, Jabatan) saat startup jika kosong
-        from seed_master import seed_data
+        # Jalankan scheduler dengan aman (tidak semua hosting support background thread)
         try:
+            start_scheduler()
+        except Exception as e:
+            print(f"[WARNING] Scheduler gagal dijalankan (mungkin tidak didukung hosting): {e}")
+
+        # Otomatis isi data master (Admin, Pangkat, Jabatan) saat startup jika kosong
+        try:
+            from seed_master import seed_data
             seed_data()
         except Exception as e:
-            print(f"Seeding failed: {e}")
+            print(f"[WARNING] Seeding failed: {e}")
 
 # ===============================
 # CREATE TABLES (AUTO)
@@ -70,7 +75,10 @@ async def manifest():
 # STATIC FILES
 # ===============================
 static_path = os.path.join(parent_dir, "frontend", "static")
-app.mount("/static", StaticFiles(directory=static_path), name="static")
+try:
+    app.mount("/static", StaticFiles(directory=static_path), name="static")
+except Exception as e:
+    print(f"[WARNING] Static files tidak bisa dimount: {e}")
 
 # ===============================
 # REGISTER ROUTERS

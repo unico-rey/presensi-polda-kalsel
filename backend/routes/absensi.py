@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Request, Depends, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import datetime
@@ -9,9 +8,9 @@ import pytz
 from backend.db.database import get_db
 from backend.models.models import Absensi, Anggota, Pengaturan, Admin
 from backend.services.scheduler import _send_push_to_anggota
+from backend.core.templates import templates
 
 router = APIRouter(prefix="/absensi", tags=["Absensi"])
-templates = Jinja2Templates(directory="frontend/templates")
 
 @router.get("/", response_class=HTMLResponse)
 def absensi_index(request: Request, db: Session = Depends(get_db)):
