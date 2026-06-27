@@ -1,25 +1,16 @@
 import json
-import base64
-import logging
-
-# Graceful import — pywebpush & cryptography mungkin tidak tersedia di Vercel serverless
 try:
     from pywebpush import webpush, WebPushException
-    from cryptography.hazmat.primitives.asymmetric import ec
-    from cryptography.hazmat.primitives import serialization
-    HAS_WEBPUSH = True
 except ImportError:
-    HAS_WEBPUSH = False
-    logging.warning("[VAPID] pywebpush/cryptography tidak tersedia. Push notification dinonaktifkan.")
-
+    webpush = None
+    WebPushException = Exception
 from sqlalchemy.orm import Session
 from backend.models.models import Pengaturan
-
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import serialization
+import base64
 
 def get_or_create_vapid_keys(db: Session):
-    if not HAS_WEBPUSH:
-        return {"private": "", "public": ""}
-
     private_key_record = db.query(Pengaturan).filter(Pengaturan.kunci == "vapid_private_key").first()
     public_key_record = db.query(Pengaturan).filter(Pengaturan.kunci == "vapid_public_key").first()
 
@@ -55,10 +46,10 @@ def get_or_create_vapid_keys(db: Session):
     return keys
 
 def send_push_notification(subscription_info: dict, message: str, db: Session):
-    if not HAS_WEBPUSH:
-        logging.warning("[VAPID] Push notification dilewati (pywebpush tidak tersedia)")
+    if webpush is None:
+        print("Push notification disabled: pywebpush is not available")
         return False
-
+        
     keys = get_or_create_vapid_keys(db)
     
     try:

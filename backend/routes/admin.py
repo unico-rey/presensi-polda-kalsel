@@ -427,7 +427,27 @@ async def update_admin_credentials(request: Request, db: Session = Depends(get_d
     import urllib.parse
     msg = "Kredensial Admin berhasil diperbarui!"
     return RedirectResponse(f"/admin/master/pengaturan?msg={urllib.parse.quote(msg)}", status_code=302)
-
+    # Delete all existing admin records to ensure only one admin exists
+    db.query(Admin).delete()
+    # Create or update the admin record with new credentials
+    if not admin:
+        admin = Admin(
+            id_admin=str(uuid.uuid4())[:8],
+            nama="Administrator",
+            email=new_email,
+            password=new_pass or "123"
+        )
+        db.add(admin)
+    else:
+        admin.email = new_email
+        if new_pass:
+            admin.password = new_pass
+    # Commit the changes
+    db.commit()
+    # Redirect with success message
+    import urllib.parse
+    msg = "Kredensial Admin berhasil diperbarui!"
+    return RedirectResponse(f"/admin/master/pengaturan?msg={urllib.parse.quote(msg)}", status_code=302)
 
 from backend.services.scheduler import _send_push_to_anggota, check_masuk_reminder, check_pulang_reminder
 
