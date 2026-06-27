@@ -1,7 +1,6 @@
 fastapi==0.121.2
 uvicorn==0.37.0
 SQLAlchemy==2.0.44
-mysql-connector-python==9.5.0
 pymysql==1.2.0
 Jinja2==3.1.6
 python-multipart==0.0.20
@@ -11,8 +10,6 @@ bcrypt==4.3.0
 python-dotenv==1.1.1
 requests==2.32.4
 openpyxl==3.1.2
-pywebpush
-apscheduler
 starlette
 pydantic
 anyio
@@ -29,9 +26,9 @@ python-dateutil
 pytz
 tzdata
 urllib3
-websockets
-watchfiles
 click
 colorama
 a2wsgi
-
+pywebpush
+apscheduler
+cryptography

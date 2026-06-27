@@ -4,9 +4,9 @@ from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 
-# MEMAKSA Python melihat folder utama SCANTOOLS-POLDA
-current_dir = os.path.dirname(os.path.abspath(__file__)) # folder app
-parent_dir = os.path.dirname(current_dir) # folder utama
+# MEMAKSA Python melihat folder utama
+current_dir = os.path.dirname(os.path.abspath(__file__)) # folder backend
+parent_dir = os.path.dirname(current_dir) # folder utama project
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
@@ -30,14 +30,13 @@ app = FastAPI(
 
 @app.on_event("startup")
 async def startup_event():
-    # Di Vercel (serverless), kita tidak perlu menjalankan scheduler (karena background thread diblokir)
-    # dan database seeding (seharusnya dijalankan sekali saat setup/migration local)
+    # Di Vercel (serverless), kita tidak perlu menjalankan scheduler dan seeding
     if not os.getenv("VERCEL"):
         # Jalankan scheduler dengan aman (tidak semua hosting support background thread)
         try:
             start_scheduler()
         except Exception as e:
-            print(f"[WARNING] Scheduler gagal dijalankan (mungkin tidak didukung hosting): {e}")
+            print(f"[WARNING] Scheduler gagal dijalankan: {e}")
 
         # Otomatis isi data master (Admin, Pangkat, Jabatan) saat startup jika kosong
         try:
@@ -50,9 +49,11 @@ async def startup_event():
 # CREATE TABLES (AUTO)
 # ===============================
 # Di Vercel (serverless), kita tidak boleh menjalankan DDL / create_all pada top-level module
-# karena akan memicu koneksi database di fase import/build yang menyebabkan build error.
 if not os.getenv("VERCEL"):
-    Base.metadata.create_all(bind=engine)
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        print(f"[WARNING] create_all failed: {e}")
 
 # ===============================
 # SERVICE WORKER (harus di root agar scope "/" bisa dikontrol)
@@ -60,6 +61,8 @@ if not os.getenv("VERCEL"):
 @app.get("/sw.js", include_in_schema=False)
 async def service_worker():
     sw_path = os.path.join(parent_dir, "frontend", "static", "sw.js")
+    if not os.path.exists(sw_path):
+        return RedirectResponse("/static/sw.js", status_code=302)
     return FileResponse(
         sw_path,
         media_type="application/javascript",
@@ -69,16 +72,18 @@ async def service_worker():
 @app.get("/manifest.json", include_in_schema=False)
 async def manifest():
     manifest_path = os.path.join(parent_dir, "frontend", "static", "manifest.json")
+    if not os.path.exists(manifest_path):
+        return {"name": "Presensi Polda Kalsel"}
     return FileResponse(manifest_path, media_type="application/json")
 
 # ===============================
 # STATIC FILES
 # ===============================
 static_path = os.path.join(parent_dir, "frontend", "static")
-try:
+if os.path.isdir(static_path):
     app.mount("/static", StaticFiles(directory=static_path), name="static")
-except Exception as e:
-    print(f"[WARNING] Static files tidak bisa dimount: {e}")
+else:
+    print(f"[WARNING] Static path tidak ditemukan: {static_path}")
 
 # ===============================
 # REGISTER ROUTERS
@@ -127,4 +132,3 @@ async def logout():
     response = RedirectResponse(url="/absensi/", status_code=302)
     response.delete_cookie("user_email")
     return response
-

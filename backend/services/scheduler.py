@@ -1,16 +1,25 @@
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.cron import CronTrigger
+import logging
+import json
 from sqlalchemy import func
 from datetime import datetime, timedelta
 import pytz
-import logging
-import json
 
 from backend.db.database import SessionLocal
 from backend.models.models import Anggota, Absensi, Pengaturan, PushSubscription
 from backend.core.vapid import send_push_notification
 
-scheduler = BackgroundScheduler(timezone="Asia/Makassar")
+# Graceful import — apscheduler mungkin tidak tersedia atau tidak didukung di serverless
+try:
+    from apscheduler.schedulers.background import BackgroundScheduler
+    from apscheduler.triggers.cron import CronTrigger
+    HAS_SCHEDULER = True
+except ImportError:
+    HAS_SCHEDULER = False
+    logging.warning("[SCHEDULER] apscheduler tidak tersedia. Scheduler dinonaktifkan.")
+
+scheduler = None
+if HAS_SCHEDULER:
+    scheduler = BackgroundScheduler(timezone="Asia/Makassar")
 
 def _get_settings(db):
     """Ambil semua pengaturan dari DB sebagai dict."""
@@ -38,9 +47,13 @@ def _get_jam_kerja(settings, hari_ini):
 
 def _send_push_to_anggota(db, id_anggota, title, body):
     """Kirim Web Push notification ke semua device milik anggota tertentu."""
-    subscriptions = db.query(PushSubscription).filter(
-        PushSubscription.id_anggota == id_anggota
-    ).all()
+    try:
+        subscriptions = db.query(PushSubscription).filter(
+            PushSubscription.id_anggota == id_anggota
+        ).all()
+    except Exception as e:
+        logging.error(f"Gagal query push subscription: {e}")
+        return 0
 
     payload = json.dumps({"title": title, "body": body})
     sent_count = 0
@@ -209,6 +222,10 @@ def check_pulang_reminder():
 
 
 def start_scheduler():
+    if not HAS_SCHEDULER or scheduler is None:
+        logging.warning("[SCHEDULER] Scheduler tidak tersedia, dilewati.")
+        return
+
     # Job 1: Cek reminder masuk setiap menit (pagi)
     scheduler.add_job(
         func=check_masuk_reminder,
