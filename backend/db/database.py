@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
+from sqlalchemy.pool import NullPool
 
 # Load environment variables from .env file
 load_dotenv()
@@ -38,7 +39,8 @@ if "aivencloud.com" in DATABASE_URL or "ssl" in DATABASE_URL.lower():
         }
 
 try:
-    engine = create_engine(DATABASE_URL, connect_args=connect_args)
+    # Use NullPool for serverless environments to prevent socket connection errors
+    engine = create_engine(DATABASE_URL, connect_args=connect_args, poolclass=NullPool)
     SessionLocal = sessionmaker(
         autocommit=False,
         autoflush=False,
@@ -47,7 +49,7 @@ try:
 except Exception as e:
     print(f"DATABASE CONNECTION ERROR: {e}")
     # Fallback to sqlite if connection fails so the app doesn't crash entirely
-    engine = create_engine("sqlite:///./presensi.db", connect_args={"check_same_thread": False})
+    engine = create_engine("sqlite:///./presensi.db", connect_args={"check_same_thread": False}, poolclass=NullPool)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
