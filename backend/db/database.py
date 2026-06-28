@@ -12,6 +12,10 @@ load_dotenv()
 # Gunakan environment variable untuk deployment (Railway/Vercel/Aiven)
 DATABASE_URL = os.getenv("DATABASE_URL", "mysql+mysqlconnector://root:@localhost/presensi_polda")
 
+# Force mysqlconnector on Vercel to avoid pymysql socket Errno 16 bug
+if os.getenv("VERCEL") and "mysql+pymysql://" in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.replace("mysql+pymysql://", "mysql+mysqlconnector://", 1)
+
 # Fix untuk database Railway (biasanya menggunakan mysql://... perlu diubah ke mysql+mysqlconnector://)
 if DATABASE_URL.startswith("mysql://"):
     DATABASE_URL = DATABASE_URL.replace("mysql://", "mysql+mysqlconnector://", 1)
